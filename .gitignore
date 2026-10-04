@@ -1,0 +1,12 @@
+# env files
+.env
+.env*.local
+
+# OS / editor
+.DS_Store
+
+# dependencies
+node_modules/
+
+CLAUDE.md
+design/

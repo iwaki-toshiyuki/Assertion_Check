@@ -1,0 +1,101 @@
+# コードを変更したときに、frontend / backend が壊れていないかを自動で検証するCI。
+# 手元で「動いた」だけでは見落とす問題（依存の入れ忘れ・型エラー・ビルド失敗など）を、
+# 毎回まっさらな環境で同じ手順を実行することで、mainに入る前に検出する。
+name: CI
+
+# --- 実行タイミング ---
+# PRの段階で問題に気付けるよう、Pull Request 作成・更新時に実行する。
+# main への push 時にも実行し、マージ後の状態が正常かを確認する。
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+# CIはコードを読むだけなので、GITHUB_TOKEN の権限を読み取りのみに絞る（最小権限の原則）。
+permissions:
+  contents: read
+
+# 同じブランチに続けて push した場合、古い実行は結果を見る必要がないためキャンセルし、
+# 待ち時間と実行時間の無駄を減らす。
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # --- frontend ジョブ ---
+  # Next.js アプリが lint・型チェック・ビルドを通るかを検証する。
+  # backend とは独立したジョブにすることで並列実行され、どちらで失敗したかも一目で分かる。
+  frontend:
+    name: Frontend (Next.js)
+    # GitHub が用意する Linux の仮想マシンで実行する。ジョブごとに毎回新しい環境が用意されるため、
+    # 手元の環境に依存しない再現性のある検証ができる。
+    runs-on: ubuntu-latest
+    # このリポジトリは frontend/ と backend/ に分かれているため、
+    # 以降の run コマンドはすべて frontend/ ディレクトリで実行する。
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      # 仮想マシンは空の状態で起動するため、まずリポジトリのコードを取得する。
+      - uses: actions/checkout@v7
+
+      # Node.js をセットアップする。バージョンは .nvmrc から読み込み、
+      # 手元の開発環境と同じバージョンで検証する（「手元では動くのにCIで落ちる」を防ぐ）。
+      # また npm のキャッシュを有効にして、2回目以降の依存インストールを高速化する。
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      # package-lock.json に記録されたバージョンどおりに依存を厳密にインストールする。
+      # npm install と違い lock ファイルを書き換えないため、手元と同じ依存関係で検証できる。
+      # lock ファイルと package.json が食い違っていればここで失敗し、更新漏れに気付ける。
+      - name: Install dependencies
+        run: npm ci
+
+      # ESLint でコードの書き方の問題や、バグにつながりやすい記述を検出する。
+      - name: Lint
+        run: npm run lint
+
+      # TypeScript の型チェックを行い、実行前に型の誤り（引数の渡し間違いなど）を検出する。
+      # ビルドとは別のステップにすることで、失敗したときに原因が型エラーだとすぐ分かる。
+      # （Next.js が自動生成する型が必要なため、スクリプト内で next typegen も実行している）
+      - name: Type check
+        run: npm run type-check
+
+      # 本番用ビルドが成功するかを確認する。lint・型チェックを通っても、
+      # ビルド時にしか発生しないエラー（静的生成の失敗など）があるため最後に検証する。
+      - name: Build
+        run: npm run build
+
+  # --- backend ジョブ ---
+  # Hono API が lint・型チェック・ビルドを通るかを検証する。
+  # 手順の考え方は frontend ジョブと同じで、対象ディレクトリが backend/ になる。
+  backend:
+    name: Backend (Hono)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+          cache-dependency-path: backend/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Type check
+        run: npm run type-check
+
+      # esbuild で AWS Lambda にデプロイできる1ファイル（dist/lambda.mjs）にまとめられるかを確認する。
+      - name: Build
+        run: npm run build
