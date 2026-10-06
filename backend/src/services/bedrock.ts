@@ -9,11 +9,7 @@ const client = new BedrockRuntimeClient({
 });
 
 // Claude Haiku 4.5にメッセージを送り、回答を取得する
-
 export const converseWithClaude = async (prompt: string): Promise<string> => {
-
-  // Claudeに送信するリクエストを作成
-
   const command = new ConverseCommand({
     modelId: "jp.anthropic.claude-haiku-4-5-20251001-v1:0",
     messages: [
@@ -25,24 +21,18 @@ export const converseWithClaude = async (prompt: string): Promise<string> => {
           },
         ],
       },
-
     ],
   });
 
   // Bedrockにリクエストを送信
-
   const response = await client.send(command);
 
   // Claudeから返されたテキストを取得
-
   const text = response.output?.message?.content?.[0]?.text;
 
   if (!text) {
-
     throw new Error("Claudeからレスポンスを取得できませんでした。");
-
   }
 
   return text;
-
 };
