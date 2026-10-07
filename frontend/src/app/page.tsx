@@ -1,69 +1,165 @@
-import Image from "next/image";
+"use client";
+
+import { useState } from "react";
+import { env } from "@/lib/env";
+
+// アサーション分析APIから返される分析結果の型
+type AnalysisResult = {
+  assertive: number;
+  aggressive: number;
+  nonAssertive: number;
+  feedback: string;
+  suggestion: string;
+};
+
 
 export default function Home() {
+   // 入力内容を画面上で管理し、文字数表示や後続のAPI送信に利用する。
+  const [situation, setSituation] = useState("");
+  const [response, setResponse] = useState("");
+
+  // APIから取得した分析結果を画面表示に利用するため保持する。
+  const [analysisResult, setAnalysisResult] =
+    useState<AnalysisResult | null>(null);
+
+  // 空白のみの入力も未入力として扱い、両方入力された場合のみ分析可能にする。
+  const canAnalyze =
+    situation.trim().length > 0 && response.trim().length > 0;
+
+  // 分析ボタン押下時の処理。
+  // 入力内容を分析APIへ送信し、アサーション分析を実行する。
+  const handleAnalyze = async () => {
+    if (!canAnalyze) {
+      return;
+    }
+
+    try {
+      const apiResponse = await fetch(`${env.apiBaseUrl}/api/analysis`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          situation,
+          response,
+        }),
+      });
+
+      if (!apiResponse.ok) {
+        throw new Error("分析APIへのリクエストに失敗しました");
+      }
+
+      const result: AnalysisResult = await apiResponse.json();
+
+      // APIから返された分析結果をstateに保存する。
+      setAnalysisResult(result);
+
+    } catch (error) {
+      console.error("分析処理に失敗しました:", error);
+    }
+  };
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert h-5 w-[100px]"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the{" "}
-            <code className="rounded bg-black/[.06] px-1.5 py-0.5 font-mono text-[0.9em] dark:bg-white/[.08]">
-              page.tsx
-            </code>{" "}
-            file.
+    <main className="min-h-screen bg-emerald-50 px-4 py-12">
+      <div className="mx-auto max-w-2xl">
+        {/* アプリ名・画面の説明 */}
+        <header className="mb-8 text-center">
+          <h1 className="text-3xl font-bold text-emerald-800">
+            アサーションCheck
           </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
+
+          <p className="mt-3 text-gray-600">
+            コミュニケーションで困った場面を振り返ってみましょう。
           </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert h-[14px] w-4"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={14}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
-    </div>
+        </header>
+
+        {/* アサーション分析の入力フォーム */}
+        <section className="rounded-2xl bg-white p-8 shadow-sm">
+          <div className="space-y-6">
+            <div>
+              <label
+                htmlFor="situation"
+                className="mb-2 block font-semibold text-gray-800"
+              >
+                困った場面
+              </label>
+
+              <textarea
+                id="situation"
+                name="situation"
+                rows={6}
+                maxLength={500}
+                value={situation}
+                onChange={(event) => setSituation(event.target.value)}
+                placeholder="例：上司から急な仕事を頼まれ、断りづらかった"
+                className="w-full resize-none rounded-lg border border-gray-300 p-3 text-gray-900 outline-none focus:border-emerald-500"
+              />
+
+            <p className="mt-1 text-right text-sm text-gray-500">
+                {situation.length} / 500
+            </p>
+            </div>
+
+            <div>
+              <label
+                htmlFor="response"
+                className="mb-2 block font-semibold text-gray-800"
+              >
+                そのとき取った対応
+              </label>
+
+              <textarea
+                id="response"
+                name="response"
+                rows={6}
+                maxLength={500}
+                value={response}
+                onChange={(event) => setResponse(event.target.value)}
+                placeholder="例：断れず、そのまま仕事を引き受けた"
+                className="w-full resize-none rounded-lg border border-gray-300 p-3 text-gray-900 outline-none focus:border-emerald-500"
+              />
+
+              <p className="mt-1 text-right text-sm text-gray-500">
+                {response.length} / 500
+              </p>
+            </div>
+
+            <button
+              type="button"
+              onClick={handleAnalyze}
+              disabled={!canAnalyze}
+              className="w-full rounded-lg bg-emerald-600 px-4 py-3 font-semibold text-white transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:bg-gray-300"
+            >
+              分析する
+            </button>
+          </div>
+        </section>
+        {analysisResult && (
+          <section className="mt-8 rounded-2xl bg-white p-8 shadow-sm">
+            <h2 className="mb-4 text-xl font-bold text-gray-800">
+              分析結果
+            </h2>
+
+            <p>アサーティブ：{analysisResult.assertive}%</p>
+            <p>アグレッシブ：{analysisResult.aggressive}%</p>
+            <p>ノンアサーティブ：{analysisResult.nonAssertive}%</p>
+
+            <div className="mt-6">
+              <h3 className="font-semibold text-gray-800">フィードバック</h3>
+              <p className="mt-2 text-gray-600">
+                {analysisResult.feedback}
+              </p>
+            </div>
+
+            <div className="mt-6">
+              <h3 className="font-semibold text-gray-800">改善例</h3>
+              <p className="mt-2 text-gray-600">
+                {analysisResult.suggestion}
+              </p>
+            </div>
+          </section>
+        )}
+      </div>
+    </main>
   );
 }
