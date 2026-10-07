@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 import { env } from "@/lib/env";
+import { AnalysisResult } from "@/components/analysis/AnalysisResult";
+import { AnalysisForm } from "@/components/analysis/AnalysisForm";
 
 // アサーション分析APIから返される分析結果の型
 type AnalysisResult = {
@@ -93,98 +95,23 @@ export default function Home() {
           </p>
         </header>
 
-        {/* アサーション分析の入力フォーム */}
-        <section className="rounded-2xl bg-white p-8 shadow-sm">
-          <div className="space-y-6">
-            <div>
-              <label
-                htmlFor="situation"
-                className="mb-2 block font-semibold text-gray-800"
-              >
-                困った場面
-              </label>
+        {/* 入力フォームに必要な状態とイベント処理を子コンポーネントへ渡す。 */}
+        <AnalysisForm
+          situation={situation}
+          response={response}
+          isLoading={isLoading}
+          errorMessage={errorMessage}
+          canAnalyze={canAnalyze}
+          onSituationChange={setSituation}
+          onResponseChange={setResponse}
+          onAnalyze={handleAnalyze}
+        />
 
-              <textarea
-                id="situation"
-                name="situation"
-                rows={6}
-                maxLength={500}
-                value={situation}
-                onChange={(event) => setSituation(event.target.value)}
-                placeholder="例：上司から急な仕事を頼まれ、断りづらかった"
-                className="w-full resize-none rounded-lg border border-gray-300 p-3 text-gray-900 outline-none focus:border-emerald-500"
-              />
-
-            <p className="mt-1 text-right text-sm text-gray-500">
-                {situation.length} / 500
-            </p>
-            </div>
-
-            <div>
-              <label
-                htmlFor="response"
-                className="mb-2 block font-semibold text-gray-800"
-              >
-                そのとき取った対応
-              </label>
-
-              <textarea
-                id="response"
-                name="response"
-                rows={6}
-                maxLength={500}
-                value={response}
-                onChange={(event) => setResponse(event.target.value)}
-                placeholder="例：断れず、そのまま仕事を引き受けた"
-                className="w-full resize-none rounded-lg border border-gray-300 p-3 text-gray-900 outline-none focus:border-emerald-500"
-              />
-
-              <p className="mt-1 text-right text-sm text-gray-500">
-                {response.length} / 500
-              </p>
-            </div>
-
-            <button
-              type="button"
-              onClick={handleAnalyze}
-              disabled={!canAnalyze || isLoading}
-              className="w-full rounded-lg bg-emerald-600 px-4 py-3 font-semibold text-white transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:bg-gray-300"
-            >
-              {isLoading ? "分析中..." : "分析する"}
-            </button>
-
-            {errorMessage && (
-              <p role="alert" className="text-sm text-red-600">
-                {errorMessage}
-              </p>
-            )}
-          </div>
-        </section>
+        {/* 分析結果が取得できた場合のみ、分析結果コンポーネントを表示する。 */}
         {analysisResult && (
-          <section className="mt-8 rounded-2xl bg-white p-8 shadow-sm">
-            <h2 className="mb-4 text-xl font-bold text-gray-800">
-              分析結果
-            </h2>
-
-            <p>アサーティブ：{analysisResult.assertive}%</p>
-            <p>アグレッシブ：{analysisResult.aggressive}%</p>
-            <p>ノンアサーティブ：{analysisResult.nonAssertive}%</p>
-
-            <div className="mt-6">
-              <h3 className="font-semibold text-gray-800">フィードバック</h3>
-              <p className="mt-2 text-gray-600">
-                {analysisResult.feedback}
-              </p>
-            </div>
-
-            <div className="mt-6">
-              <h3 className="font-semibold text-gray-800">改善例</h3>
-              <p className="mt-2 text-gray-600">
-                {analysisResult.suggestion}
-              </p>
-            </div>
-          </section>
+          <AnalysisResult result={analysisResult} />
         )}
+
       </div>
     </main>
   );
