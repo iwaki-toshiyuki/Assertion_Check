@@ -1,69 +1,118 @@
-import Image from "next/image";
+"use client";
+
+import { useState } from "react";
+import { env } from "@/lib/env";
+import { AnalysisResult } from "@/components/analysis/AnalysisResult";
+import { AnalysisForm } from "@/components/analysis/AnalysisForm";
+
+// アサーション分析APIから返される分析結果の型
+type AnalysisResult = {
+  assertive: number;
+  aggressive: number;
+  nonAssertive: number;
+  feedback: string;
+  suggestion: string;
+};
+
 
 export default function Home() {
+   // 入力内容を画面上で管理し、文字数表示や後続のAPI送信に利用する。
+  const [situation, setSituation] = useState("");
+  const [response, setResponse] = useState("");
+
+  // APIへの分析リクエスト中かどうかを管理する。
+  const [isLoading, setIsLoading] = useState(false);
+
+  // APIから取得した分析結果を画面表示に利用するため保持する。
+  const [analysisResult, setAnalysisResult] =
+    useState<AnalysisResult | null>(null);
+
+  // 分析処理で発生したエラーメッセージを画面表示するために保持する。
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+  // 空白のみの入力も未入力として扱い、両方入力された場合のみ分析可能にする。
+  const canAnalyze =
+    situation.trim().length > 0 && response.trim().length > 0;
+
+  // 分析ボタン押下時の処理。
+  // 入力内容を分析APIへ送信し、アサーション分析を実行する。
+  const handleAnalyze = async () => {
+    if (!canAnalyze) {
+      return;
+    }
+
+  // 新しい分析を開始する際に、前回のエラーをリセットする。
+  setErrorMessage(null);
+
+  // 分析開始時にローディング状態へ切り替える。
+  setIsLoading(true);
+
+
+    try {
+      const apiResponse = await fetch(`${env.apiBaseUrl}/api/analysis`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          situation,
+          response,
+        }),
+      });
+
+      if (!apiResponse.ok) {
+        throw new Error("分析APIへのリクエストに失敗しました");
+      }
+
+      const result: AnalysisResult = await apiResponse.json();
+
+      // APIから返された分析結果をstateに保存する。
+      setAnalysisResult(result);
+    } catch (error) {
+      console.error("分析処理に失敗しました:", error);
+
+      // 内部エラーの詳細は表示せず、ユーザー向けのメッセージを設定する。
+      setErrorMessage(
+        "分析中にエラーが発生しました。時間をおいてもう一度お試しください。",
+      );
+    } finally {
+      setIsLoading(false);
+    }
+
+  };
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert h-5 w-[100px]"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the{" "}
-            <code className="rounded bg-black/[.06] px-1.5 py-0.5 font-mono text-[0.9em] dark:bg-white/[.08]">
-              page.tsx
-            </code>{" "}
-            file.
+    <main className="min-h-screen bg-emerald-50 px-4 py-12">
+      <div className="mx-auto max-w-2xl">
+        {/* アプリ名・画面の説明 */}
+        <header className="mb-8 text-center">
+          <h1 className="text-3xl font-bold text-emerald-800">
+            アサーションCheck
           </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
+
+          <p className="mt-3 text-gray-600">
+            コミュニケーションで困った場面を振り返ってみましょう。
           </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert h-[14px] w-4"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={14}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
-    </div>
+        </header>
+
+        {/* 入力フォームに必要な状態とイベント処理を子コンポーネントへ渡す。 */}
+        <AnalysisForm
+          situation={situation}
+          response={response}
+          isLoading={isLoading}
+          errorMessage={errorMessage}
+          canAnalyze={canAnalyze}
+          onSituationChange={setSituation}
+          onResponseChange={setResponse}
+          onAnalyze={handleAnalyze}
+        />
+
+        {/* 分析結果が取得できた場合のみ、分析結果コンポーネントを表示する。 */}
+        {analysisResult && (
+          <AnalysisResult result={analysisResult} />
+        )}
+
+      </div>
+    </main>
   );
 }
