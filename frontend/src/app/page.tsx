@@ -18,6 +18,9 @@ export default function Home() {
   const [situation, setSituation] = useState("");
   const [response, setResponse] = useState("");
 
+  // APIへの分析リクエスト中かどうかを管理する。
+  const [isLoading, setIsLoading] = useState(false);
+
   // APIから取得した分析結果を画面表示に利用するため保持する。
   const [analysisResult, setAnalysisResult] =
     useState<AnalysisResult | null>(null);
@@ -32,6 +35,10 @@ export default function Home() {
     if (!canAnalyze) {
       return;
     }
+
+  // 分析開始時にローディング状態へ切り替える。
+  setIsLoading(true);
+
 
     try {
       const apiResponse = await fetch(`${env.apiBaseUrl}/api/analysis`, {
@@ -53,10 +60,12 @@ export default function Home() {
 
       // APIから返された分析結果をstateに保存する。
       setAnalysisResult(result);
-
     } catch (error) {
       console.error("分析処理に失敗しました:", error);
+    } finally {
+      setIsLoading(false);
     }
+
   };
 
   return (
@@ -130,7 +139,7 @@ export default function Home() {
               disabled={!canAnalyze}
               className="w-full rounded-lg bg-emerald-600 px-4 py-3 font-semibold text-white transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:bg-gray-300"
             >
-              分析する
+              {isLoading ? "分析中..." : "分析する"}
             </button>
           </div>
         </section>
