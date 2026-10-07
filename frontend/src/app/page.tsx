@@ -25,6 +25,9 @@ export default function Home() {
   const [analysisResult, setAnalysisResult] =
     useState<AnalysisResult | null>(null);
 
+  // 分析処理で発生したエラーメッセージを画面表示するために保持する。
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
   // 空白のみの入力も未入力として扱い、両方入力された場合のみ分析可能にする。
   const canAnalyze =
     situation.trim().length > 0 && response.trim().length > 0;
@@ -35,6 +38,9 @@ export default function Home() {
     if (!canAnalyze) {
       return;
     }
+
+  // 新しい分析を開始する際に、前回のエラーをリセットする。
+  setErrorMessage(null);
 
   // 分析開始時にローディング状態へ切り替える。
   setIsLoading(true);
@@ -62,6 +68,11 @@ export default function Home() {
       setAnalysisResult(result);
     } catch (error) {
       console.error("分析処理に失敗しました:", error);
+
+      // 内部エラーの詳細は表示せず、ユーザー向けのメッセージを設定する。
+      setErrorMessage(
+        "分析中にエラーが発生しました。時間をおいてもう一度お試しください。",
+      );
     } finally {
       setIsLoading(false);
     }
@@ -136,11 +147,17 @@ export default function Home() {
             <button
               type="button"
               onClick={handleAnalyze}
-              disabled={!canAnalyze}
+              disabled={!canAnalyze || isLoading}
               className="w-full rounded-lg bg-emerald-600 px-4 py-3 font-semibold text-white transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:bg-gray-300"
             >
               {isLoading ? "分析中..." : "分析する"}
             </button>
+
+            {errorMessage && (
+              <p role="alert" className="text-sm text-red-600">
+                {errorMessage}
+              </p>
+            )}
           </div>
         </section>
         {analysisResult && (
