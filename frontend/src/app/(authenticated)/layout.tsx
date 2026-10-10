@@ -1,7 +1,8 @@
 import AuthGuard from "@/components/auth/AuthGuard";
 import Header from "@/components/layout/Header";
+import BottomNavigation from "@/components/layout/BottomNavigation";
 
-// ログイン後の画面に共通ヘッダーと認証チェックを適用する。
+// 認証済みユーザー向け画面の共通レイアウト。
 export default function AuthenticatedLayout({
   children,
 }: Readonly<{
@@ -9,12 +10,15 @@ export default function AuthenticatedLayout({
 }>) {
   return (
     <AuthGuard>
-      <div className="min-h-screen bg-emerald-50">
-        {/* 共通ヘッダー */}
+      <div className="flex min-h-screen flex-col bg-emerald-50">
+        {/* 全画面共通のヘッダー */}
         <Header />
 
-        {/* 各ページ固有の内容 */}
-        {children}
+        {/* ページごとのコンテンツ */}
+        <div className="flex-1">{children}</div>
+
+        {/* 全画面共通の下部ナビゲーション */}
+        <BottomNavigation />
       </div>
     </AuthGuard>
   );
