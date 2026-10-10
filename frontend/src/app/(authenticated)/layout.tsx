@@ -10,15 +10,21 @@ export default function AuthenticatedLayout({
 }>) {
   return (
     <AuthGuard>
-      <div className="flex min-h-screen flex-col bg-emerald-50">
-        {/* 全画面共通のヘッダー */}
-        <Header />
+      <div className="flex h-dvh flex-col overflow-hidden bg-emerald-50">
+        {/* 画面上部に常時表示する共通ヘッダー */}
+        <div className="z-10 shrink-0">
+          <Header />
+        </div>
 
-        {/* ページごとのコンテンツ */}
-        <div className="flex-1">{children}</div>
+        {/* この領域だけをスクロール可能にする */}
+        <div className="min-h-0 flex-1 overflow-y-auto">
+          {children}
+        </div>
 
-        {/* 全画面共通の下部ナビゲーション */}
-        <BottomNavigation />
+        {/* 画面下部に常時表示するナビゲーション */}
+        <div className="z-10 shrink-0">
+          <BottomNavigation />
+        </div>
       </div>
     </AuthGuard>
   );
