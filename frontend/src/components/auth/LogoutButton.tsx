@@ -21,6 +21,9 @@ export default function LogoutButton() {
       // Cognitoのログアウト処理を実行する
       await logoutUser();
 
+      // ログアウト成功後、一時保存していた分析結果を削除する
+      sessionStorage.removeItem("analysisResult");
+
       // ログアウト完了後、ログイン画面へ移動する
       router.replace("/login");
       router.refresh();
