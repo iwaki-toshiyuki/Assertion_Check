@@ -4,6 +4,9 @@ import { useState } from "react";
 import { env } from "@/lib/env";
 import { AnalysisResult } from "@/components/analysis/AnalysisResult";
 import { AnalysisForm } from "@/components/analysis/AnalysisForm";
+import AuthStatus from "@/components/auth/AuthStatus";
+import AuthGuard from "@/components/auth/AuthGuard";
+import { fetchAuthSession } from "aws-amplify/auth";
 
 // アサーション分析APIから返される分析結果の型
 type AnalysisResult = {
@@ -49,10 +52,20 @@ export default function Home() {
 
 
     try {
+      // Cognitoからアクセストークンを取得する
+      const session = await fetchAuthSession();
+      const accessToken = session.tokens?.accessToken?.toString();
+
+      // アクセストークンが取得できない場合はエラーにする
+      if (!accessToken) {
+        throw new Error("認証情報を取得できませんでした。再度ログインしてください。");
+      }
+
       const apiResponse = await fetch(`${env.apiBaseUrl}/api/analysis`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          Authorization: `Bearer ${accessToken}`,
         },
         body: JSON.stringify({
           situation,
@@ -82,37 +95,45 @@ export default function Home() {
   };
 
   return (
-    <main className="min-h-screen bg-emerald-50 px-4 py-12">
-      <div className="mx-auto max-w-2xl">
-        {/* アプリ名・画面の説明 */}
-        <header className="mb-8 text-center">
-          <h1 className="text-3xl font-bold text-emerald-800">
-            アサーションCheck
-          </h1>
+    <AuthGuard>
+      <main className="min-h-screen bg-emerald-50 px-4 py-12">
+        <div className="mx-auto max-w-2xl">
 
-          <p className="mt-3 text-gray-600">
-            コミュニケーションで困った場面を振り返ってみましょう。
-          </p>
-        </header>
+          {/* ログイン状態に応じてログインリンク・ログアウトボタンを表示する */}
+          <div className="mb-6 flex justify-end">
+            <AuthStatus />
+          </div>
 
-        {/* 入力フォームに必要な状態とイベント処理を子コンポーネントへ渡す。 */}
-        <AnalysisForm
-          situation={situation}
-          response={response}
-          isLoading={isLoading}
-          errorMessage={errorMessage}
-          canAnalyze={canAnalyze}
-          onSituationChange={setSituation}
-          onResponseChange={setResponse}
-          onAnalyze={handleAnalyze}
-        />
+          {/* アプリ名・画面の説明 */}
+          <header className="mb-8 text-center">
+            <h1 className="text-3xl font-bold text-emerald-800">
+              アサーションCheck
+            </h1>
 
-        {/* 分析結果が取得できた場合のみ、分析結果コンポーネントを表示する。 */}
-        {analysisResult && (
-          <AnalysisResult result={analysisResult} />
-        )}
+            <p className="mt-3 text-gray-600">
+              コミュニケーションで困った場面を振り返ってみましょう。
+            </p>
+          </header>
 
-      </div>
-    </main>
+          {/* 入力フォームに必要な状態とイベント処理を子コンポーネントへ渡す。 */}
+          <AnalysisForm
+            situation={situation}
+            response={response}
+            isLoading={isLoading}
+            errorMessage={errorMessage}
+            canAnalyze={canAnalyze}
+            onSituationChange={setSituation}
+            onResponseChange={setResponse}
+            onAnalyze={handleAnalyze}
+          />
+
+          {/* 分析結果が取得できた場合のみ、分析結果コンポーネントを表示する。 */}
+          {analysisResult && (
+            <AnalysisResult result={analysisResult} />
+          )}
+
+        </div>
+      </main>
+    </AuthGuard>
   );
 }
