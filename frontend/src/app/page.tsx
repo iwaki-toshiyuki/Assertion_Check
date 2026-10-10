@@ -6,6 +6,7 @@ import { AnalysisResult } from "@/components/analysis/AnalysisResult";
 import { AnalysisForm } from "@/components/analysis/AnalysisForm";
 import AuthStatus from "@/components/auth/AuthStatus";
 import AuthGuard from "@/components/auth/AuthGuard";
+import { fetchAuthSession } from "aws-amplify/auth";
 
 // アサーション分析APIから返される分析結果の型
 type AnalysisResult = {
@@ -51,10 +52,20 @@ export default function Home() {
 
 
     try {
+      // Cognitoからアクセストークンを取得する
+      const session = await fetchAuthSession();
+      const accessToken = session.tokens?.accessToken?.toString();
+
+      // アクセストークンが取得できない場合はエラーにする
+      if (!accessToken) {
+        throw new Error("認証情報を取得できませんでした。再度ログインしてください。");
+      }
+
       const apiResponse = await fetch(`${env.apiBaseUrl}/api/analysis`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          Authorization: `Bearer ${accessToken}`,
         },
         body: JSON.stringify({
           situation,
