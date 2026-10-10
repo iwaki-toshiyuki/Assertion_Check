@@ -3,6 +3,7 @@
 import { useState, type FormEvent } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { confirmUserSignUp } from "@/lib/auth/confirm-signup";
+import { autoLoginUser } from "@/lib/auth/auto-login";
 
 // メール認証フォームの表示・入力管理・送信処理を担当する
 export default function ConfirmSignUpForm() {
@@ -25,31 +26,48 @@ export default function ConfirmSignUpForm() {
     setError("");
 
     try {
-      // Cognitoに確認コードを送信する
-      const result = await confirmUserSignUp({
-        email,
-        confirmationCode,
-      });
+    // Cognitoに確認コードを送信する
+    const result = await confirmUserSignUp({
+      email,
+      confirmationCode,
+    });
 
-      // メール認証が完了した場合はログイン画面へ移動する
-      if (result.isSignUpComplete) {
-        router.push("/login");
-        return;
-      }
-
+    // メール認証が完了していない場合はエラーを表示する
+    if (!result.isSignUpComplete) {
       setError("メール認証を完了できませんでした。");
-    } catch (error) {
-      // Cognitoから返されたエラーを画面に表示する
-      setError(
-        error instanceof Error
-          ? error.message
-          : "メール認証に失敗しました。",
-      );
-    } finally {
-      // 認証処理の終了後、ローディング状態を解除する
-      setIsLoading(false);
+      return;
     }
-  };
+
+    // 自動ログインが必要な場合
+    if (result.nextStep.signUpStep === "COMPLETE_AUTO_SIGN_IN") {
+      try {
+        // Cognitoの自動ログイン処理を実行する
+        const signInResult = await autoLoginUser();
+
+        // 自動ログインに成功した場合はホーム画面へ遷移する
+        if (signInResult.isSignedIn) {
+          router.replace("/");
+          return;
+        }
+      } catch (autoLoginError) {
+        // 自動ログインに失敗してもメール認証は完了している
+        console.error("自動ログインに失敗しました", autoLoginError);
+      }
+    }
+    // 自動ログインできなかった場合は通常のログイン画面へ移動する
+    router.replace("/login");
+  } catch (error) {
+    // メール認証処理のエラーを画面に表示する
+    setError(
+      error instanceof Error
+        ? error.message
+        : "メール認証に失敗しました。",
+    );
+  } finally {
+    // 認証処理の終了後、ローディング状態を解除する
+    setIsLoading(false);
+  }
+};
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">

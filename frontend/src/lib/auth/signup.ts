@@ -12,6 +12,9 @@ export async function registerUser({ email, password }: SignUpInput) {
     username: email,
     password,
     options: {
+      // メール認証完了後の自動ログインを有効化する
+      autoSignIn: true,
+
       // メールアドレスをユーザー属性として登録する
       userAttributes: {
         email,
