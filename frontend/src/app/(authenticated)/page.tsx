@@ -1,11 +1,9 @@
 import Link from "next/link";
-import AuthGuard from "@/components/auth/AuthGuard";
 
 // ホーム画面。
 // 分析履歴の取得機能は未実装のため、現段階では空の状態を表示する。
 export default function Home() {
   return (
-    <AuthGuard>
       <main className="min-h-screen bg-emerald-50 px-4 py-12">
         <div className="mx-auto max-w-2xl">
           {/* 画面タイトル */}
@@ -41,6 +39,5 @@ export default function Home() {
           </section>
         </div>
       </main>
-    </AuthGuard>
   );
 }

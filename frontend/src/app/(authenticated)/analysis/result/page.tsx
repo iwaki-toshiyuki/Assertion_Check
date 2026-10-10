@@ -2,7 +2,6 @@
 
 import { useSyncExternalStore } from "react";
 import Link from "next/link";
-import AuthGuard from "@/components/auth/AuthGuard";
 import { AnalysisResult } from "@/components/analysis/AnalysisResult";
 import type { AnalysisResultData } from "@/types/analysis";
 
@@ -37,7 +36,6 @@ export default function AnalysisResultPage() {
     }
 
   return (
-    <AuthGuard>
       <main className="min-h-screen bg-emerald-50 px-4 py-12">
         <div className="mx-auto max-w-2xl">
           {/* 画面タイトル */}
@@ -80,6 +78,5 @@ export default function AnalysisResultPage() {
           </div>
         </div>
       </main>
-    </AuthGuard>
   );
 }

@@ -3,8 +3,6 @@
 import { useState } from "react";
 import { env } from "@/lib/env";
 import { AnalysisForm } from "@/components/analysis/AnalysisForm";
-import AuthStatus from "@/components/auth/AuthStatus";
-import AuthGuard from "@/components/auth/AuthGuard";
 import { fetchAuthSession } from "aws-amplify/auth";
 import type { AnalysisResultData } from "@/types/analysis";
 import { useRouter } from "next/navigation";
@@ -90,14 +88,8 @@ export default function NewAnalysisPage() {
   };
 
   return (
-    <AuthGuard>
       <main className="min-h-screen bg-emerald-50 px-4 py-12">
         <div className="mx-auto max-w-2xl">
-
-          {/* ログイン状態に応じてログインリンク・ログアウトボタンを表示する */}
-          <div className="mb-6 flex justify-end">
-            <AuthStatus />
-          </div>
 
           {/* 新規作成画面の見出し */}
           <header className="mb-8 text-center">
@@ -124,6 +116,5 @@ export default function NewAnalysisPage() {
 
         </div>
       </main>
-    </AuthGuard>
   );
 }
