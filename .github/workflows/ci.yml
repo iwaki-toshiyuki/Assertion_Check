@@ -68,6 +68,10 @@ jobs:
       # ビルド時にしか発生しないエラー（静的生成の失敗など）があるため最後に検証する。
       - name: Build
         run: npm run build
+        env:
+          # CIでは実際のCognito認証を行わないため、ビルド用のダミー値を設定する
+          NEXT_PUBLIC_COGNITO_USER_POOL_ID: ap-northeast-1_example
+          NEXT_PUBLIC_COGNITO_CLIENT_ID: exampleclientid
 
   # --- backend ジョブ ---
   # Hono API が lint・型チェック・ビルドを通るかを検証する。
