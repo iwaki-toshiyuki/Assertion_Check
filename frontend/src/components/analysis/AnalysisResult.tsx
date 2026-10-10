@@ -1,11 +1,4 @@
-// アサーション分析APIから返される分析結果の型
-type AnalysisResultData = {
-  assertive: number;
-  aggressive: number;
-  nonAssertive: number;
-  feedback: string;
-  suggestion: string;
-};
+import type { AnalysisResultData } from "@/types/analysis";
 
 type AnalysisResultProps = {
   result: AnalysisResultData;

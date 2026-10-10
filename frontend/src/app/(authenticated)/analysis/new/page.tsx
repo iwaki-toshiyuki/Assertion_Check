@@ -2,33 +2,22 @@
 
 import { useState } from "react";
 import { env } from "@/lib/env";
-import { AnalysisResult } from "@/components/analysis/AnalysisResult";
 import { AnalysisForm } from "@/components/analysis/AnalysisForm";
-import AuthStatus from "@/components/auth/AuthStatus";
-import AuthGuard from "@/components/auth/AuthGuard";
 import { fetchAuthSession } from "aws-amplify/auth";
-
-// アサーション分析APIから返される分析結果の型
-type AnalysisResult = {
-  assertive: number;
-  aggressive: number;
-  nonAssertive: number;
-  feedback: string;
-  suggestion: string;
-};
+import type { AnalysisResultData } from "@/types/analysis";
+import { useRouter } from "next/navigation";
 
 
-export default function Home() {
+export default function NewAnalysisPage() {
+   // 分析完了後に結果画面へ遷移するために利用する。
+  const router = useRouter();
+
    // 入力内容を画面上で管理し、文字数表示や後続のAPI送信に利用する。
   const [situation, setSituation] = useState("");
   const [response, setResponse] = useState("");
 
   // APIへの分析リクエスト中かどうかを管理する。
   const [isLoading, setIsLoading] = useState(false);
-
-  // APIから取得した分析結果を画面表示に利用するため保持する。
-  const [analysisResult, setAnalysisResult] =
-    useState<AnalysisResult | null>(null);
 
   // 分析処理で発生したエラーメッセージを画面表示するために保持する。
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -77,10 +66,14 @@ export default function Home() {
         throw new Error("分析APIへのリクエストに失敗しました");
       }
 
-      const result: AnalysisResult = await apiResponse.json();
+      const result: AnalysisResultData = await apiResponse.json();
 
-      // APIから返された分析結果をstateに保存する。
-      setAnalysisResult(result);
+      // 分析結果を次の画面へ引き継ぐため、一時的にsessionStorageへ保存する。
+      sessionStorage.setItem("analysisResult", JSON.stringify(result));
+
+      // 分析結果画面へ移動する。
+      router.push("/analysis/result");
+
     } catch (error) {
       console.error("分析処理に失敗しました:", error);
 
@@ -95,16 +88,10 @@ export default function Home() {
   };
 
   return (
-    <AuthGuard>
       <main className="min-h-screen bg-emerald-50 px-4 py-12">
         <div className="mx-auto max-w-2xl">
 
-          {/* ログイン状態に応じてログインリンク・ログアウトボタンを表示する */}
-          <div className="mb-6 flex justify-end">
-            <AuthStatus />
-          </div>
-
-          {/* アプリ名・画面の説明 */}
+          {/* 新規作成画面の見出し */}
           <header className="mb-8 text-center">
             <h1 className="text-3xl font-bold text-emerald-800">
               アサーションCheck
@@ -127,13 +114,7 @@ export default function Home() {
             onAnalyze={handleAnalyze}
           />
 
-          {/* 分析結果が取得できた場合のみ、分析結果コンポーネントを表示する。 */}
-          {analysisResult && (
-            <AnalysisResult result={analysisResult} />
-          )}
-
         </div>
       </main>
-    </AuthGuard>
   );
 }
