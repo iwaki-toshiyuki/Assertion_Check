@@ -5,6 +5,7 @@ import { env } from "@/lib/env";
 import { AnalysisResult } from "@/components/analysis/AnalysisResult";
 import { AnalysisForm } from "@/components/analysis/AnalysisForm";
 import AuthStatus from "@/components/auth/AuthStatus";
+import AuthGuard from "@/components/auth/AuthGuard";
 
 // アサーション分析APIから返される分析結果の型
 type AnalysisResult = {
@@ -83,43 +84,45 @@ export default function Home() {
   };
 
   return (
-    <main className="min-h-screen bg-emerald-50 px-4 py-12">
-      <div className="mx-auto max-w-2xl">
+    <AuthGuard>
+      <main className="min-h-screen bg-emerald-50 px-4 py-12">
+        <div className="mx-auto max-w-2xl">
 
-        {/* ログイン状態に応じてログインリンク・ログアウトボタンを表示する */}
-        <div className="mb-6 flex justify-end">
-          <AuthStatus />
+          {/* ログイン状態に応じてログインリンク・ログアウトボタンを表示する */}
+          <div className="mb-6 flex justify-end">
+            <AuthStatus />
+          </div>
+
+          {/* アプリ名・画面の説明 */}
+          <header className="mb-8 text-center">
+            <h1 className="text-3xl font-bold text-emerald-800">
+              アサーションCheck
+            </h1>
+
+            <p className="mt-3 text-gray-600">
+              コミュニケーションで困った場面を振り返ってみましょう。
+            </p>
+          </header>
+
+          {/* 入力フォームに必要な状態とイベント処理を子コンポーネントへ渡す。 */}
+          <AnalysisForm
+            situation={situation}
+            response={response}
+            isLoading={isLoading}
+            errorMessage={errorMessage}
+            canAnalyze={canAnalyze}
+            onSituationChange={setSituation}
+            onResponseChange={setResponse}
+            onAnalyze={handleAnalyze}
+          />
+
+          {/* 分析結果が取得できた場合のみ、分析結果コンポーネントを表示する。 */}
+          {analysisResult && (
+            <AnalysisResult result={analysisResult} />
+          )}
+
         </div>
-
-        {/* アプリ名・画面の説明 */}
-        <header className="mb-8 text-center">
-          <h1 className="text-3xl font-bold text-emerald-800">
-            アサーションCheck
-          </h1>
-
-          <p className="mt-3 text-gray-600">
-            コミュニケーションで困った場面を振り返ってみましょう。
-          </p>
-        </header>
-
-        {/* 入力フォームに必要な状態とイベント処理を子コンポーネントへ渡す。 */}
-        <AnalysisForm
-          situation={situation}
-          response={response}
-          isLoading={isLoading}
-          errorMessage={errorMessage}
-          canAnalyze={canAnalyze}
-          onSituationChange={setSituation}
-          onResponseChange={setResponse}
-          onAnalyze={handleAnalyze}
-        />
-
-        {/* 分析結果が取得できた場合のみ、分析結果コンポーネントを表示する。 */}
-        {analysisResult && (
-          <AnalysisResult result={analysisResult} />
-        )}
-
-      </div>
-    </main>
+      </main>
+    </AuthGuard>
   );
 }
