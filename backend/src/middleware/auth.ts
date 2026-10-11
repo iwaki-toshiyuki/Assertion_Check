@@ -6,6 +6,7 @@ import { env } from "../env";
 export type AuthEnv = {
   Variables: {
     cognitoSub: string;
+    accessToken: string;
   };
 };
 
@@ -44,25 +45,26 @@ export const authMiddleware = createMiddleware<AuthEnv>(async (c, next) => {
     );
   }
 
+  let cognitoSub: string;
+
   try {
-    // Cognitoの公開鍵を使用してJWTを検証し、ペイロードを取得する
+    // Cognitoの公開鍵を使用してJWTを検証する
     const payload = await verifier.verify(token);
 
     // 検証済みJWTからCognitoユーザーIDを取得する
-    const cognitoSub = payload.sub;
-
-    // 後続のAPIから参照できるようにコンテキストへ保存する
-    c.set("cognitoSub", cognitoSub);
-
-    // JWTが有効な場合は次の処理へ進む
-    await next();
+    cognitoSub = payload.sub;
   } catch (error) {
-    // 無効・期限切れなどのJWTは受け付けない
     console.error("JWT検証に失敗しました:", error);
 
-    return c.json(
-      { error: "認証に失敗しました" },
-      401,
-    );
+    return c.json({ error: "認証に失敗しました" }, 401);
   }
-});
+
+  // 認証済みユーザーのIDを後続のAPIに渡す
+  c.set("cognitoSub", cognitoSub);
+
+  // Cognitoのユーザー属性取得に使用するアクセストークンを保存する
+  c.set("accessToken", token);
+
+  // 認証成功後、次の処理へ進む
+  await next();
+  });

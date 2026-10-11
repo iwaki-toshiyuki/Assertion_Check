@@ -5,6 +5,7 @@ import { env } from "./env";
 import { health } from "./routes/health";
 import analysis from "./routes/analysis";
 import { authMiddleware } from "./middleware/auth";
+import users from "./routes/users";
 
 export const app = new Hono();
 
@@ -20,3 +21,7 @@ app.use("/api/analysis", authMiddleware);
 
 // 分析API
 app.route("/api/analysis", analysis);
+
+// ユーザー情報APIは認証済みユーザーのみ利用できる
+app.use("/api/users/*", authMiddleware);
+app.route("/api/users", users);
