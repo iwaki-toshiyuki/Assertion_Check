@@ -2,6 +2,13 @@ import { CognitoJwtVerifier } from "aws-jwt-verify";
 import { createMiddleware } from "hono/factory";
 import { env } from "../env";
 
+// 認証後にHonoのコンテキストで共有する情報
+export type AuthEnv = {
+  Variables: {
+    cognitoSub: string;
+  };
+};
+
 // JWT検証に必要なCognitoの設定が存在するか確認する
 if (!env.cognitoUserPoolId || !env.cognitoAppClientId) {
   throw new Error("Cognitoの環境変数が設定されていません");
@@ -15,7 +22,7 @@ const verifier = CognitoJwtVerifier.create({
 });
 
 // CognitoのJWTを検証する認証ミドルウェア
-export const authMiddleware = createMiddleware(async (c, next) => {
+export const authMiddleware = createMiddleware<AuthEnv>(async (c, next) => {
   // Authorizationヘッダーを取得する
   const authorization = c.req.header("Authorization");
 
@@ -38,8 +45,14 @@ export const authMiddleware = createMiddleware(async (c, next) => {
   }
 
   try {
-    // Cognitoの公開鍵を使用してJWTを検証する
-    await verifier.verify(token);
+    // Cognitoの公開鍵を使用してJWTを検証し、ペイロードを取得する
+    const payload = await verifier.verify(token);
+
+    // 検証済みJWTからCognitoユーザーIDを取得する
+    const cognitoSub = payload.sub;
+
+    // 後続のAPIから参照できるようにコンテキストへ保存する
+    c.set("cognitoSub", cognitoSub);
 
     // JWTが有効な場合は次の処理へ進む
     await next();
