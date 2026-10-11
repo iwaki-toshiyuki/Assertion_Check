@@ -9,6 +9,7 @@ export default function SignUpForm() {
   const router = useRouter();
 
   // フォームの入力値を管理する
+  const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
@@ -26,7 +27,7 @@ export default function SignUpForm() {
 
     try {
       // Cognitoに新規登録をリクエストする
-      const result = await registerUser({ email, password });
+      const result = await registerUser({ username, email, password });
 
       // メール認証が必要な場合は確認コード入力画面へ移動する
       if (result.nextStep.signUpStep === "CONFIRM_SIGN_UP") {
@@ -56,6 +57,25 @@ export default function SignUpForm() {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
+      {/* ユーザー名入力 */}
+      <div>
+        <label htmlFor="username" className="mb-1 block">
+          ユーザー名
+        </label>
+        <input
+          id="username"
+          type="text"
+          autoComplete="nickname"
+          required
+          maxLength={20}
+          value={username}
+          onChange={(event) => setUsername(event.target.value)}
+          className="w-full rounded border px-3 py-2"
+        />
+        <p className="mt-1 text-sm text-gray-600">
+          20文字以内で入力してください。
+        </p>
+      </div>
       {/* メールアドレス入力 */}
       <div>
         <label htmlFor="email" className="mb-1 block">

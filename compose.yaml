@@ -1,0 +1,33 @@
+services:
+  postgres:
+    # ローカル開発用のPostgreSQL
+    image: postgres:17
+    container_name: assertion-check-postgres
+
+    # Docker再起動時などにコンテナを自動起動する
+    restart: unless-stopped
+
+    # PostgreSQLの初期設定（開発環境専用）
+    environment:
+      POSTGRES_USER: assertion_user
+      POSTGRES_PASSWORD: assertion_password
+      POSTGRES_DB: assertion_check
+
+    # MacからのみDBに接続できるようにする
+    ports:
+      - "127.0.0.1:5432:5432"
+
+    # コンテナを削除してもDBのデータを保持する
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+    # PostgreSQLが接続可能な状態か定期的に確認する
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U assertion_user -d assertion_check"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+# DBデータを永続化するためのDockerボリューム
+volumes:
+  postgres_data:
