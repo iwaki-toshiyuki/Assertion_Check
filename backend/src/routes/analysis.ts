@@ -1,8 +1,11 @@
 import { Hono } from "hono";
 import { analysisRequestSchema } from "../schemas/analysis";
 import { analyzeCommunication } from "../services/analysis";
+import { saveAnalysis } from "../services/analysis-save";
+import { findOrCreateUser } from "../db/users";
+import type { AuthEnv } from "../middleware/auth";
 
-const analysis = new Hono();
+const analysis = new Hono<AuthEnv>();
 
 analysis.post("/", async (c) => {
   // リクエストボディをJSONとして読み取る
@@ -33,12 +36,28 @@ analysis.post("/", async (c) => {
   }
 
   try {
+    // JWT認証ミドルウェアで取得したCognitoの認証情報を取得する
+    const cognitoSub = c.get("cognitoSub");
+    const accessToken = c.get("accessToken");
+
+    // Cognitoユーザーに対応するDBユーザーを取得・登録する
+    const user = await findOrCreateUser(cognitoSub, accessToken);
+
     // 検証済みの入力内容を使ってBedrockで分析する
     const analysisResult = await analyzeCommunication(result.data);
 
+    // 分析内容と分析結果をPostgreSQLに保存する
+    await saveAnalysis({
+      userId: user.id,
+      situation: result.data.situation,
+      response: result.data.response,
+      analysisResult,
+    });
+
+    // 既存のフロントエンドとの互換性を維持するため、返却形式は変更しない
     return c.json(analysisResult);
   } catch (error) {
-    console.error("アサーション分析に失敗しました:", error);
+    console.error("アサーション分析または保存に失敗しました:", error);
 
     return c.json(
       {
