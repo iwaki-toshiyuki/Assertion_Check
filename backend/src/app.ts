@@ -6,6 +6,7 @@ import { health } from "./routes/health";
 import analysis from "./routes/analysis";
 import { authMiddleware } from "./middleware/auth";
 import users from "./routes/users";
+import records from "./routes/records";
 
 export const app = new Hono();
 
@@ -25,3 +26,8 @@ app.route("/api/analysis", analysis);
 // ユーザー情報APIは認証済みユーザーのみ利用できる
 app.use("/api/users/*", authMiddleware);
 app.route("/api/users", users);
+
+// 分析履歴APIは認証済みユーザーのみ利用できる
+app.use("/api/records", authMiddleware);
+app.use("/api/records/*", authMiddleware);
+app.route("/api/records", records);
