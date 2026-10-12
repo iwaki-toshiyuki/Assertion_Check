@@ -4,6 +4,7 @@ import { useState, type FormEvent } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { confirmUserSignUp } from "@/lib/auth/confirm-signup";
 import { autoLoginUser } from "@/lib/auth/auto-login";
+import { syncDbUser } from "@/lib/api/users";
 
 // メール認証フォームの表示・入力管理・送信処理を担当する
 export default function ConfirmSignUpForm() {
@@ -44,11 +45,22 @@ export default function ConfirmSignUpForm() {
         // Cognitoの自動ログイン処理を実行する
         const signInResult = await autoLoginUser();
 
-        // 自動ログインに成功した場合はホーム画面へ遷移する
+        // 自動ログイン成功後、DBユーザーを取得・作成する
         if (signInResult.isSignedIn) {
-          router.replace("/");
-          return;
-        }
+          try {
+            await syncDbUser();
+          } catch (dbError) {
+            // メール認証・Cognitoログインは成功しているため、
+            // DB連携の失敗を自動ログイン失敗として扱わない
+            console.error("DBユーザーの連携に失敗しました:", dbError);
+            setError("メール認証は完了しましたが、ユーザー情報の連携に失敗しました。");
+            return;
+          }
+
+  // DB連携完了後にホーム画面へ遷移する
+  router.replace("/");
+  return;
+}
       } catch (autoLoginError) {
         // 自動ログインに失敗してもメール認証は完了している
         console.error("自動ログインに失敗しました", autoLoginError);
