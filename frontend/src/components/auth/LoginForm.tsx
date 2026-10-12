@@ -3,6 +3,7 @@
 import { useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import { loginUser } from "@/lib/auth/login";
+import { syncDbUser } from "@/lib/api/users";
 
 // ログインフォームの表示・入力管理・送信処理を担当する
 export default function LoginForm() {
@@ -27,8 +28,11 @@ export default function LoginForm() {
       // Cognitoにログインをリクエストする
       const result = await loginUser({ email, password });
 
-      // ログイン成功時はトップページへ移動する
+      // Cognitoログイン成功後、DBユーザーを取得・作成する
       if (result.isSignedIn) {
+        await syncDbUser();
+
+        // DB連携完了後にトップページへ移動する
         router.push("/");
         return;
       }
