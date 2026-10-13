@@ -46,16 +46,19 @@ analysis.post("/", async (c) => {
     // 検証済みの入力内容を使ってBedrockで分析する
     const analysisResult = await analyzeCommunication(result.data);
 
-    // 分析内容と分析結果をPostgreSQLに保存する
-    await saveAnalysis({
+    // 分析内容と分析結果をPostgreSQLに保存し、保存したレコードIDを取得する
+    const { recordId } = await saveAnalysis({
       userId: user.id,
       situation: result.data.situation,
       response: result.data.response,
       analysisResult,
     });
 
-    // 既存のフロントエンドとの互換性を維持するため、返却形式は変更しない
-    return c.json(analysisResult);
+    // 分析結果に保存したレコードIDを追加して返却する
+    return c.json({
+      ...analysisResult,
+      recordId,
+    });
   } catch (error) {
     console.error("アサーション分析または保存に失敗しました:", error);
 
