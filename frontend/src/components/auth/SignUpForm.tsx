@@ -56,10 +56,13 @@ export default function SignUpForm() {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
+    <form onSubmit={handleSubmit} className="space-y-5">
       {/* ユーザー名入力 */}
       <div>
-        <label htmlFor="username" className="mb-1 block">
+        <label
+          htmlFor="username"
+          className="mb-2 block text-sm font-semibold text-gray-800"
+        >
           ユーザー名
         </label>
         <input
@@ -70,15 +73,18 @@ export default function SignUpForm() {
           maxLength={20}
           value={username}
           onChange={(event) => setUsername(event.target.value)}
-          className="w-full rounded border px-3 py-2"
+          className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2.5 text-gray-900 outline-none transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100"
         />
-        <p className="mt-1 text-sm text-gray-600">
+        <p className="mt-1 text-xs text-gray-500">
           20文字以内で入力してください。
         </p>
       </div>
       {/* メールアドレス入力 */}
       <div>
-        <label htmlFor="email" className="mb-1 block">
+        <label
+          htmlFor="email"
+          className="mb-2 block text-sm font-semibold text-gray-800"
+        >
           メールアドレス
         </label>
         <input
@@ -88,13 +94,16 @@ export default function SignUpForm() {
           required
           value={email}
           onChange={(event) => setEmail(event.target.value)}
-          className="w-full rounded border px-3 py-2"
+          className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2.5 text-gray-900 outline-none transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100"
         />
       </div>
 
       {/* パスワード入力 */}
       <div>
-        <label htmlFor="password" className="mb-1 block">
+        <label
+          htmlFor="password"
+          className="mb-2 block text-sm font-semibold text-gray-800"
+        >
           パスワード
         </label>
         <input
@@ -105,16 +114,19 @@ export default function SignUpForm() {
           minLength={8}
           value={password}
           onChange={(event) => setPassword(event.target.value)}
-          className="w-full rounded border px-3 py-2"
+          className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2.5 text-gray-900 outline-none transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100"
         />
-        <p className="mt-1 text-sm text-gray-600">
+        <p className="mt-1 text-xs text-gray-500">
           8文字以上で、大文字・小文字・数字・記号を含めてください。
         </p>
       </div>
 
       {/* エラーメッセージ */}
       {error && (
-        <p role="alert" className="text-sm text-red-600">
+        <p
+          role="alert"
+          className="rounded-lg border border-red-100 bg-red-50 px-3 py-2 text-sm text-red-600"
+        >
           {error}
         </p>
       )}
@@ -123,7 +135,7 @@ export default function SignUpForm() {
       <button
         type="submit"
         disabled={isLoading}
-        className="w-full rounded bg-emerald-600 px-4 py-2 font-semibold text-white disabled:opacity-50"
+        className="w-full rounded-lg bg-emerald-600 px-4 py-3 font-semibold text-white transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:bg-gray-300"
       >
         {isLoading ? "登録中..." : "新規登録"}
       </button>
