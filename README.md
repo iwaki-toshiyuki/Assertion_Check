@@ -602,11 +602,10 @@ build
 - [ ] UI設計書に合わせたレイアウト調整
 - [ ] AWS本番環境の構築
 - [ ] 本番環境へのデプロイ
-- [ ] レビュー結果を踏まえた改善
 - [ ] 追加機能の検討・実装
 
 ---
 
 ## 9. 参考資料
 - [画面遷移図](https://claude.ai/artifact/NjiBnrcPJJYuhn4GPnPXVw)
-- [UI設計](https://claude.ai/artifact/LZGCTSUBgKM8sQnBJmMtmu)
+- [UI設計書](https://claude.ai/artifact/LZGCTSUBgKM8sQnBJmMtmu)
