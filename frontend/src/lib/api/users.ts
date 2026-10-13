@@ -2,7 +2,7 @@ import { fetchAuthSession } from "aws-amplify/auth";
 import { env } from "@/lib/env";
 
 // DBに保存されているユーザー情報の型
-type DbUser = {
+export type DbUser = {
   id: number;
   username: string;
   createdAt: string;
