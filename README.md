@@ -72,8 +72,6 @@ AIは、入力された対応を以下の3つの観点から分析します。
 
 また、数値だけでなく、フィードバックと改善例を提示します。
 
-※分析結果は生成AIによる参考情報であり、医学的・心理学的な診断を行うものではありません。
-
 ### 追加機能（実装予定）
 
 今後、利用状況やレビュー結果を踏まえて機能を追加する予定です。
@@ -130,19 +128,21 @@ AIは、入力された対応を以下の3つの観点から分析します。
 
 ### AWSサービス
 
-| サービス | 用途 | 利用状況 |
-|---|---|---|
-| Amazon Cognito | ユーザー認証 | 利用中 |
-| Amazon Bedrock | AIによる分析 | 利用中 |
-| AWS Amplify Hosting | Next.jsのホスティング | 本番予定 |
-| Amazon API Gateway | APIリクエストの受付 | 本番予定 |
-| AWS Lambda | Honoの実行環境 | 本番予定 |
-| Amazon RDS for PostgreSQL | 本番データベース | 本番予定 |
-| Amazon Route 53 | DNS・ドメイン管理 | 本番予定 |
-| Amazon CloudWatch | ログ・監視 | 本番予定 |
-| AWS Secrets Manager | 機密情報の管理 | 本番予定 |
-| AWS Budgets | コスト管理 | 本番予定 |
-| AWS IAM | AWSリソースへのアクセス権限管理 | 利用中 |
+| サービス | 用途 |
+|---|---|
+| AWS Amplify Hosting | Next.jsのホスティング |
+| Amazon API Gateway | フロントエンドからのAPIリクエスト受付 |
+| AWS Lambda | Hono / TypeScriptの実行 |
+| Amazon RDS for PostgreSQL | ユーザー情報・分析履歴の保存 |
+| Amazon Cognito | ユーザー認証・JWTの発行 |
+| Amazon Bedrock | Claude Haiku 4.5によるAI分析 |
+| Amazon Route 53 | DNS・ドメイン管理 |
+| Amazon VPC | AWSリソースのネットワーク管理 |
+| VPC Endpoint | VPC内からBedrock・Secrets Managerへの接続 |
+| AWS Secrets Manager | DB接続情報などの機密情報管理 |
+| Amazon CloudWatch | ログ・監視 |
+| AWS IAM | AWSサービスへのアクセス権限管理 |
+| AWS Budgets | コスト管理・予算アラート |
 
 ---
 
@@ -370,41 +370,35 @@ npm ci
 
 フロントエンドとバックエンドで、それぞれ環境変数を設定します。
 
-**フロントエンド**
-
-```bash
-cd frontend
-cp .env.example .env.local
-```
-
-**バックエンド**
-
-```bash
-cd backend
-cp .env.example .env
-```
-
-コピーしたファイルを編集し、必要な環境変数を設定してください。
-
-| ファイル | 用途 |
+| 設定ファイル | 用途 |
 |---|---|
 | `frontend/.env.local` | Cognitoの設定・API接続先など |
 | `backend/.env` | DB接続情報・AWS関連の設定など |
 
-バックエンドのDB接続設定例：
+#### データベース接続設定
+
+バックエンドでは、`backend/.env` にPostgreSQLの接続情報を設定します。
 
 ```env
 DATABASE_URL=postgresql://assertion_user:assertion_password@127.0.0.1:5432/assertion_check
 ```
 
-※ 上記はローカル開発用の設定例です。実際の認証情報はDocker Composeの設定と一致させてください。
+※ 上記はローカル開発用の設定例です。実際の設定値はDocker Composeの設定と一致させてください。
 
-**注意事項**
+#### AWS関連の環境変数
 
-- `.env` や `.env.local` はGit管理対象に含めないでください。
-- AWSアクセスキーなどの認証情報をGitHubにコミットしないでください。
+本アプリでは、以下のAWSサービスを利用しています。
+
+- Amazon Cognito：ユーザー認証
+- Amazon Bedrock：AIによるアサーション分析
+
+AWS環境は開発者が個別に管理しているため、認証情報や具体的な設定値は公開していません。
+
+#### 注意事項
+
+- `.env` および `.env.local` はGit管理対象外としています。
+- AWSアクセスキーなどの認証情報はGitHubに公開していません。
 - Cognito・Bedrockを利用するには、AWS側の設定と適切な権限が必要です。
-- `.env.example` には実際の認証情報を記載しないでください。
 
 ### 7-6. PostgreSQLの起動
 
@@ -614,5 +608,5 @@ build
 ---
 
 ## 9. 参考資料
-[画面遷移図](https://claude.ai/artifact/NjiBnrcPJJYuhn4GPnPXVw)
-[UI設計](https://claude.ai/artifact/LZGCTSUBgKM8sQnBJmMtmu)
+- [画面遷移図](https://claude.ai/artifact/NjiBnrcPJJYuhn4GPnPXVw)
+- [UI設計](https://claude.ai/artifact/LZGCTSUBgKM8sQnBJmMtmu)
