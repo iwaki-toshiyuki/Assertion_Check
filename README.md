@@ -84,7 +84,11 @@ AIは、入力された対応を以下の3つの観点から分析します。
 - ユーザー情報の編集
 - ゲストログイン
 - UI・UXの改善
-- 利用規約・プライバシーポリシー
+
+### 公開に向けた対応
+
+- 利用規約の整備
+- プライバシーポリシーの整備
 
 
 ※追加機能は現時点での検討案であり、実装内容は変更する可能性があります。
@@ -184,6 +188,14 @@ AIは、入力された対応を以下の3つの観点から分析します。
 | データベース | Amazon RDS for PostgreSQL |
 | 生成AI | Amazon Bedrock |
 | 認証 | Amazon Cognito |
+
+### ネットワーク構成
+
+本番環境では、東京リージョン（ap-northeast-1）にVPCを構築する予定です。
+
+LambdaとRDSをプライベートサブネットに配置し、RDSはシングルAZ構成を採用する予定です。
+
+また、LambdaからBedrockやSecrets Managerへのアクセスには、VPC Endpointを利用する構成を想定しています。
 
 ### AWSアーキテクチャ図
 
@@ -293,6 +305,8 @@ Assertion_Check/
 │       └── types/             # 型定義
 │
 ├── backend/                   # Hono
+│   ├── drizzle/               # マイグレーションファイル
+│   ├── drizzle.config.ts      # Drizzle Kitの設定
 │   └── src/
 │       ├── routes/            # APIルート
 │       ├── services/          # ビジネスロジック
@@ -300,12 +314,14 @@ Assertion_Check/
 │       ├── db/                # DB接続・スキーマ
 │       └── schemas/           # バリデーション
 │
+├── docs/
+│   └── images/                # AWS構成図・ER図
+│
+├── compose.yaml               # Docker Composeの設定
 ├── .nvmrc                     # Node.jsのバージョン
 ├── .gitignore
 └── README.md
 ```
-
-※実際のディレクトリ構成を確認してから最終調整します。
 
 ---
 
@@ -355,13 +371,15 @@ nvm use
 ```bash
 cd frontend
 npm ci
+cd ..
 ```
 
 **バックエンド**
 
 ```bash
-cd ../backend
+cd backend
 npm ci
+cd ..
 ```
 
 `npm ci` は、`package-lock.json` に基づいて依存パッケージをインストールするコマンドです。
@@ -380,7 +398,7 @@ npm ci
 バックエンドでは、`backend/.env` にPostgreSQLの接続情報を設定します。
 
 ```env
-DATABASE_URL=postgresql://assertion_user:assertion_password@127.0.0.1:5432/assertion_check
+DATABASE_URL=postgresql://<DB_USER>:<DB_PASSWORD>@127.0.0.1:5432/<DB_NAME>
 ```
 
 ※ 上記はローカル開発用の設定例です。実際の設定値はDocker Composeの設定と一致させてください。
