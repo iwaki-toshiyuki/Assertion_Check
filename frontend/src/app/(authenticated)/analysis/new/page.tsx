@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { env } from "@/lib/env";
 import { AnalysisForm } from "@/components/analysis/AnalysisForm";
+import AssertionGuideLink from "@/components/assertion/AssertionGuideLink";
 import { fetchAuthSession } from "aws-amplify/auth";
 import type { AnalysisResultData } from "@/types/analysis";
 import { useRouter } from "next/navigation";
@@ -101,6 +102,11 @@ export default function NewAnalysisPage() {
               コミュニケーションで困った場面を振り返ってみましょう。
             </p>
           </header>
+
+          {/* アサーションの説明画面への案内 */}
+          <div className="mb-8">
+            <AssertionGuideLink />
+          </div>
 
           {/* 入力フォームに必要な状態とイベント処理を子コンポーネントへ渡す。 */}
           <AnalysisForm
