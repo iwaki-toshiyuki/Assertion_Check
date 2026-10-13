@@ -1,9 +1,15 @@
-// アサーション分析APIから返される分析結果の共通型。
-// 分析入力画面・分析結果画面・表示コンポーネントで再利用する。
+// アサーション分析結果の共通型。
+// 分析結果の表示コンポーネントなどで再利用する。
 export type AnalysisResultData = {
   assertive: number;
   aggressive: number;
   nonAssertive: number;
   feedback: string;
   suggestion: string;
+};
+
+// 分析APIのレスポンス型。
+// 分析結果に加えて、DBに保存したレコードIDを受け取る。
+export type AnalysisResponse = AnalysisResultData & {
+  recordId: number;
 };

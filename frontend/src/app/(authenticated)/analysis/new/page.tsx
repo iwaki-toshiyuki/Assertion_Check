@@ -5,7 +5,7 @@ import { env } from "@/lib/env";
 import { AnalysisForm } from "@/components/analysis/AnalysisForm";
 import AssertionGuideLink from "@/components/assertion/AssertionGuideLink";
 import { fetchAuthSession } from "aws-amplify/auth";
-import type { AnalysisResultData } from "@/types/analysis";
+import type { AnalysisResponse } from "@/types/analysis";
 import { useRouter } from "next/navigation";
 
 
@@ -67,13 +67,11 @@ export default function NewAnalysisPage() {
         throw new Error("分析APIへのリクエストに失敗しました");
       }
 
-      const result: AnalysisResultData = await apiResponse.json();
+      // 分析結果とDBに保存されたレコードIDを取得する。
+      const result: AnalysisResponse = await apiResponse.json();
 
-      // 分析結果を次の画面へ引き継ぐため、一時的にsessionStorageへ保存する。
-      sessionStorage.setItem("analysisResult", JSON.stringify(result));
-
-      // 分析結果画面へ移動する。
-      router.push("/analysis/result");
+      // 保存されたレコードIDを使って、分析履歴詳細画面へ遷移する。
+      router.push(`/analysis/${result.recordId}`);
 
     } catch (error) {
       console.error("分析処理に失敗しました:", error);
