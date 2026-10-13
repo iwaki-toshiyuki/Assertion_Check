@@ -5,6 +5,7 @@ import Link from "next/link";
 import { fetchAuthSession } from "aws-amplify/auth";
 import { env } from "@/lib/env";
 import { RecordCard } from "@/components/records/RecordCard";
+import AssertionGuideLink from "@/components/assertion/AssertionGuideLink";
 import type { AnalysisRecord } from "@/types/records";
 
 // ホーム画面。ログインユーザーの分析履歴を一覧表示する。
@@ -71,6 +72,11 @@ export default function Home() {
             これまでの分析結果を振り返りましょう。
           </p>
         </header>
+
+        {/* アサーションの説明画面への案内 */}
+        <div className="mb-8">
+          <AssertionGuideLink />
+        </div>
 
         {/* 新規作成画面へのリンク */}
         <div className="mb-8">

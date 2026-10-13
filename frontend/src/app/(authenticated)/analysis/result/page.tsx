@@ -3,10 +3,10 @@
 import { useSyncExternalStore } from "react";
 import Link from "next/link";
 import { AnalysisResult } from "@/components/analysis/AnalysisResult";
+import AssertionGuideLink from "@/components/assertion/AssertionGuideLink";
 import type { AnalysisResultData } from "@/types/analysis";
 
 // 分析結果画面。
-// Step 7でDBを導入するまでは、sessionStorageから分析結果を取得する。
 export default function AnalysisResultPage() {
     // 今回は同じ画面内での更新通知を必要としないため、購読処理は行わない。
     const subscribe = () => () => {};
@@ -48,6 +48,11 @@ export default function AnalysisResultPage() {
               あなたのコミュニケーションを振り返ってみましょう。
             </p>
           </header>
+
+          {/* アサーションの説明画面への案内（分析結果の有無に関わらず表示する） */}
+          <div className="mb-8">
+            <AssertionGuideLink />
+          </div>
 
           {/* 分析結果の読み込み中 */}
           {analysisResult ? (

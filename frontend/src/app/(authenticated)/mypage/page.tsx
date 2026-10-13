@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useState } from "react";
 import { syncDbUser } from "@/lib/api/users";
 import type { DbUser } from "@/lib/api/users";
@@ -117,21 +118,22 @@ export default function MyPage() {
                 </div>
               </section>
 
-              {/* メニュー */}
-              <section className="rounded-xl border border-emerald-100 bg-white p-6 shadow-sm">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium text-gray-800">
-                    アサーションとは
-                  </span>
+              {/* アサーション説明画面へのリンク */}
+              <Link
+                href="/assertion-guide"
+                className="flex items-center justify-between rounded-xl border border-emerald-100 bg-white p-6 shadow-sm transition-colors hover:border-emerald-200 hover:bg-emerald-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-700"
+              >
+                <span className="text-sm font-medium text-gray-800">
+                  アサーションとは
+                </span>
 
-                  <span
-                    className="text-xl text-gray-400"
-                    aria-hidden="true"
-                  >
-                    ›
-                  </span>
-                </div>
-              </section>
+                <span
+                  className="text-xl text-gray-400"
+                  aria-hidden="true"
+                >
+                  ›
+                </span>
+              </Link>
             </div>
           )}
         </div>

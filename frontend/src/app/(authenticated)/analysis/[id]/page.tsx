@@ -6,6 +6,7 @@ import { useParams } from "next/navigation";
 import { fetchAuthSession } from "aws-amplify/auth";
 import { env } from "@/lib/env";
 import { AnalysisResult } from "@/components/analysis/AnalysisResult";
+import AssertionGuideLink from "@/components/assertion/AssertionGuideLink";
 import type { AnalysisRecordDetail } from "@/types/records";
 import type { AnalysisResultData } from "@/types/analysis";
 
@@ -95,6 +96,11 @@ export default function AnalysisHistoryDetailPage() {
             過去のコミュニケーションを振り返りましょう。
           </p>
         </header>
+
+        {/* アサーションの説明画面への案内（取得中・エラー時も表示する） */}
+        <div className="mb-8">
+          <AssertionGuideLink />
+        </div>
 
         {isLoading ? (
           <p className="rounded-2xl bg-white p-8 text-center text-gray-600">
