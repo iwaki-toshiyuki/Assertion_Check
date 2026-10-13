@@ -52,10 +52,9 @@ export async function saveAnalysis({
       throw new Error("分析結果の保存に失敗しました");
     }
 
-    // 両方の保存に成功した場合のみ確定する
+    // 両方の保存に成功した場合のみ、保存したレコードIDを返す
     return {
-      record,
-      analysisResult: savedResult,
+      recordId: record.id,
     };
   });
 }
