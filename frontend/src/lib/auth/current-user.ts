@@ -1,4 +1,5 @@
-import { getCurrentUser } from "aws-amplify/auth";
+import { getCurrentUser,fetchUserAttributes, } from "aws-amplify/auth";
+
 
 // 現在ログインしているユーザーの情報を取得する
 export async function fetchCurrentUser() {
@@ -20,3 +21,12 @@ export async function fetchCurrentUser() {
     throw error;
   }
 }
+
+// Cognitoに登録されているメールアドレスを取得する
+export async function fetchCurrentUserEmail() {
+  // ログイン中のユーザー属性を取得する
+  const attributes = await fetchUserAttributes();
+
+  return attributes.email ?? null;
+}
+
