@@ -82,10 +82,13 @@ export default function ConfirmSignUpForm() {
 };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
+    <form onSubmit={handleSubmit} className="space-y-5">
       {/* 認証対象のメールアドレス */}
       <div>
-        <label htmlFor="email" className="mb-1 block">
+        <label
+          htmlFor="email"
+          className="mb-2 block text-sm font-semibold text-gray-800"
+        >
           メールアドレス
         </label>
         <input
@@ -93,13 +96,16 @@ export default function ConfirmSignUpForm() {
           type="email"
           value={email}
           readOnly
-          className="w-full rounded border bg-gray-100 px-3 py-2"
+          className="w-full rounded-lg border border-gray-200 bg-gray-100 px-3 py-2.5 text-gray-600 outline-none"
         />
       </div>
 
       {/* メールで受信した確認コード */}
       <div>
-        <label htmlFor="confirmationCode" className="mb-1 block">
+        <label
+          htmlFor="confirmationCode"
+          className="mb-2 block text-sm font-semibold text-gray-800"
+        >
           確認コード
         </label>
         <input
@@ -110,13 +116,16 @@ export default function ConfirmSignUpForm() {
           required
           value={confirmationCode}
           onChange={(event) => setConfirmationCode(event.target.value)}
-          className="w-full rounded border px-3 py-2"
+          className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2.5 text-gray-900 outline-none transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100"
         />
       </div>
 
       {/* エラーメッセージ */}
       {error && (
-        <p role="alert" className="text-sm text-red-600">
+        <p
+          role="alert"
+          className="rounded-lg border border-red-100 bg-red-50 px-3 py-2 text-sm text-red-600"
+        >
           {error}
         </p>
       )}
@@ -125,7 +134,7 @@ export default function ConfirmSignUpForm() {
       <button
         type="submit"
         disabled={isLoading || !email}
-        className="w-full rounded bg-emerald-600 px-4 py-2 font-semibold text-white disabled:opacity-50"
+        className="w-full rounded-lg bg-emerald-600 px-4 py-3 font-semibold text-white transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:bg-gray-300"
       >
         {isLoading ? "認証中..." : "メール認証"}
       </button>
