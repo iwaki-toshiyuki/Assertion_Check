@@ -49,3 +49,31 @@ export async function consumeAnalysisQuota(
   // 更新対象がなければ、1日の利用上限に達している
   return result.length > 0;
 }
+
+// 指定ユーザーの本日の分析利用状況を取得する
+// 利用状況の確認だけなので、分析回数は加算しない
+export async function getAnalysisUsage(userId: number) {
+  const today = getTodayInJst();
+
+  const result = await db
+    .select({
+      requestCount: analysisUsage.requestCount,
+    })
+    .from(analysisUsage)
+    .where(
+      and(
+        eq(analysisUsage.userId, userId),
+        eq(analysisUsage.usageDate, today),
+      ),
+    )
+    .limit(1);
+
+  // 本日まだ分析していない場合は0回として扱う
+  const usedCount = result[0]?.requestCount ?? 0;
+
+  return {
+    dailyLimit: DAILY_ANALYSIS_LIMIT,
+    usedCount,
+    remainingCount: Math.max(0, DAILY_ANALYSIS_LIMIT - usedCount),
+  };
+}

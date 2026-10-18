@@ -4,9 +4,35 @@ import { analyzeCommunication } from "../services/analysis";
 import { saveAnalysis } from "../services/analysis-save";
 import { findOrCreateUser } from "../db/users";
 import type { AuthEnv } from "../middleware/auth";
-import { consumeAnalysisQuota } from "../db/analysis-usage.js";
+import { consumeAnalysisQuota, getAnalysisUsage, } from "../db/analysis-usage.js";
 
 const analysis = new Hono<AuthEnv>();
+
+// ログインユーザーの本日の分析利用状況を取得する
+analysis.get("/usage", async (c) => {
+  try {
+    // JWT認証ミドルウェアで取得したCognitoの認証情報を取得する
+    const cognitoSub = c.get("cognitoSub");
+    const accessToken = c.get("accessToken");
+
+    // Cognitoユーザーに対応するDBユーザーを取得・登録する
+    const user = await findOrCreateUser(cognitoSub, accessToken);
+
+    // 本日の利用回数と残り回数を取得する
+    const usage = await getAnalysisUsage(user.id);
+
+    return c.json(usage);
+  } catch (error) {
+    console.error("分析利用状況の取得に失敗しました:", error);
+
+    return c.json(
+      {
+        error: "分析利用状況の取得に失敗しました",
+      },
+      500,
+    );
+  }
+});
 
 analysis.post("/", async (c) => {
   // リクエストボディをJSONとして読み取る
