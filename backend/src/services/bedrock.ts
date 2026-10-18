@@ -9,15 +9,27 @@ const client = new BedrockRuntimeClient({
 });
 
 // Claude Haiku 4.5にメッセージを送り、回答を取得する
-export const converseWithClaude = async (prompt: string): Promise<string> => {
+export const converseWithClaude = async (
+  systemPrompt: string,
+  userPrompt: string,
+): Promise<string> => {
   const command = new ConverseCommand({
     modelId: "jp.anthropic.claude-haiku-4-5-20251001-v1:0",
+
+    // AIへの指示をSystem Promptとして設定する
+    system: [
+      {
+        text: systemPrompt,
+      },
+    ],
+
+    // ユーザー入力は分析対象のデータとして送信する
     messages: [
       {
         role: "user",
         content: [
           {
-            text: prompt,
+            text: userPrompt,
           },
         ],
       },
