@@ -127,6 +127,18 @@ export default function NewAnalysisPage() {
         }),
       });
 
+      // 本日の分析回数の上限に達した場合は、専用メッセージを表示する
+      if (apiResponse.status === 429) {
+        setRemainingCount(0);
+
+        setErrorMessage(
+          "本日の分析回数の上限（10回）に達しました。明日以降に再度お試しください。",
+        );
+
+        return;
+      }
+
+      // その他のAPIエラーは従来どおり処理する
       if (!apiResponse.ok) {
         throw new Error("分析APIへのリクエストに失敗しました");
       }
