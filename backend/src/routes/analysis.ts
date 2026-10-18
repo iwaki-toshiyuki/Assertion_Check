@@ -4,6 +4,7 @@ import { analyzeCommunication } from "../services/analysis";
 import { saveAnalysis } from "../services/analysis-save";
 import { findOrCreateUser } from "../db/users";
 import type { AuthEnv } from "../middleware/auth";
+import { consumeAnalysisQuota } from "../db/analysis-usage.js";
 
 const analysis = new Hono<AuthEnv>();
 
@@ -42,6 +43,18 @@ analysis.post("/", async (c) => {
 
     // Cognitoユーザーに対応するDBユーザーを取得・登録する
     const user = await findOrCreateUser(cognitoSub, accessToken);
+
+    // Bedrockを呼び出す前に、当日の分析実行枠を1回分確保する
+    const canAnalyze = await consumeAnalysisQuota(user.id);
+
+    if (!canAnalyze) {
+      return c.json(
+        {
+          error: "本日の分析回数の上限（10回）に達しました。明日以降に再度お試しください。",
+        },
+        429,
+      );
+    }
 
     // 検証済みの入力内容を使ってBedrockで分析する
     const analysisResult = await analyzeCommunication(result.data);
