@@ -9,14 +9,26 @@ users.get("/me", async (c) => {
   const cognitoSub = c.get("cognitoSub");
   const accessToken = c.get("accessToken");
 
-  // DBに存在すれば取得、存在しなければ新規登録する
-  const user = await findOrCreateUser(cognitoSub, accessToken);
+  try {
+    // DBに存在すれば取得、存在しなければ新規登録する
+    const user = await findOrCreateUser(cognitoSub, accessToken);
 
-  return c.json({
-    id: user.id,
-    username: user.username,
-    createdAt: user.createdAt,
-  });
+    return c.json({
+      id: user.id,
+      username: user.username,
+      createdAt: user.createdAt,
+    });
+  } catch (error) {
+    // エラーの詳細はサーバー側に記録し、クライアントには公開しない
+    console.error("ユーザー情報の取得に失敗しました:", error);
+
+    return c.json(
+      {
+        error: "ユーザー情報の取得に失敗しました",
+      },
+      500,
+    );
+  }
 });
 
 export default users;
