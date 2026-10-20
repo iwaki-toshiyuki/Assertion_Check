@@ -6,8 +6,7 @@ import {
   timestamp,
   integer,
   text,
-  date,
-  unique
+  index
 } from 'drizzle-orm/pg-core';
 
 // アプリ内のユーザー情報を管理するテーブル
@@ -97,7 +96,7 @@ export const analysisResults = pgTable('analysis_results', {
     .notNull(),
 });
 
-// ユーザーごとの1日のAI分析実行回数を管理する
+// AI分析の実行枠を確保した履歴を記録する
 export const analysisUsage = pgTable(
   "analysis_usage",
   {
@@ -108,24 +107,16 @@ export const analysisUsage = pgTable(
       .notNull()
       .references(() => users.id),
 
-    // 利用日（JSTを基準にアプリケーション側で設定する）
-    usageDate: date("usage_date").notNull(),
-
-    // 当日の分析実行回数
-    requestCount: integer("request_count").notNull().default(0),
-
-    // レコードの作成日時・更新日時
-    createdAt: timestamp("created_at").defaultNow().notNull(),
-    updatedAt: timestamp("updated_at")
+    // AI分析の実行枠を確保した日時
+    createdAt: timestamp("created_at", { withTimezone: true })
       .defaultNow()
-      .$onUpdate(() => new Date())
       .notNull(),
   },
   (table) => [
-    // 同じユーザー・同じ日付の利用回数レコードを重複させない
-    unique("analysis_usage_user_date_unique").on(
+    // ユーザーごとの利用履歴を日時で検索しやすくする
+    index("analysis_usage_user_created_at_idx").on(
       table.userId,
-      table.usageDate,
+      table.createdAt,
     ),
   ],
 );

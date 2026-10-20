@@ -1,75 +1,79 @@
-import { and, eq, lt, sql } from "drizzle-orm";
+import { and, eq, gte, lt, sql } from "drizzle-orm";
 import { db } from "./client.js";
-import { analysisUsage } from "./schema.js";
+import { analysisUsage, users } from "./schema.js";
 
 // 1ユーザーが1日に実行できるAI分析の最大回数
 const DAILY_ANALYSIS_LIMIT = 10;
 
-// 日本時間（JST）の今日の日付をYYYY-MM-DD形式で取得する
-function getTodayInJst(): string {
-  return new Intl.DateTimeFormat("en-CA", {
+// 日本時間（JST）の今日の開始・終了日時をUTCで取得する
+function getTodayRangeInJst() {
+  const today = new Intl.DateTimeFormat("en-CA", {
     timeZone: "Asia/Tokyo",
     year: "numeric",
     month: "2-digit",
     day: "2-digit",
   }).format(new Date());
+
+  const start = new Date(`${today}T00:00:00+09:00`);
+  const end = new Date(start.getTime() + 24 * 60 * 60 * 1000);
+
+  return { start, end };
+}
+
+// 指定ユーザーの本日の利用回数を取得する
+async function countTodayUsage(
+  database: Pick<typeof db, "select">,
+  userId: number,
+): Promise<number> {
+  const { start, end } = getTodayRangeInJst();
+
+  const result = await database
+    .select({ count: sql<number>`count(*)::int` })
+    .from(analysisUsage)
+    .where(
+      and(
+        eq(analysisUsage.userId, userId),
+        gte(analysisUsage.createdAt, start),
+        lt(analysisUsage.createdAt, end),
+      ),
+    );
+
+  return result[0]?.count ?? 0;
 }
 
 // AI分析の実行枠を1回分確保する
-// 同時リクエストでも上限を超えないよう、DB側で原子的に更新する
+// 同じユーザーの同時リクエストを行ロックで順番に処理する
 export async function consumeAnalysisQuota(
   userId: number,
 ): Promise<boolean> {
-  const today = getTodayInJst();
+  return db.transaction(async (tx) => {
+    // 対象ユーザーの行をロックする
+    await tx
+      .select({ id: users.id })
+      .from(users)
+      .where(eq(users.id, userId))
+      .for("update");
 
-  const result = await db
-    .insert(analysisUsage)
-    .values({
+    // 本日の利用回数を取得する
+    const usedCount = await countTodayUsage(tx, userId);
+
+    if (usedCount >= DAILY_ANALYSIS_LIMIT) {
+      return false;
+    }
+
+    // AI分析の実行枠を確保した履歴を追加する
+    await tx.insert(analysisUsage).values({
       userId,
-      usageDate: today,
-      requestCount: 1,
-    })
-    .onConflictDoUpdate({
-      target: [analysisUsage.userId, analysisUsage.usageDate],
+    });
 
-      // 既存の利用回数に1を加算する
-      set: {
-        requestCount: sql`${analysisUsage.requestCount} + 1`,
-        updatedAt: new Date(),
-      },
-
-      // 10回未満の場合だけ更新を許可する
-      setWhere: and(
-        eq(analysisUsage.userId, userId),
-        lt(analysisUsage.requestCount, DAILY_ANALYSIS_LIMIT),
-      ),
-    })
-    .returning({ requestCount: analysisUsage.requestCount });
-
-  // 更新対象がなければ、1日の利用上限に達している
-  return result.length > 0;
+    return true;
+  });
 }
 
 // 指定ユーザーの本日の分析利用状況を取得する
 // 利用状況の確認だけなので、分析回数は加算しない
 export async function getAnalysisUsage(userId: number) {
-  const today = getTodayInJst();
-
-  const result = await db
-    .select({
-      requestCount: analysisUsage.requestCount,
-    })
-    .from(analysisUsage)
-    .where(
-      and(
-        eq(analysisUsage.userId, userId),
-        eq(analysisUsage.usageDate, today),
-      ),
-    )
-    .limit(1);
-
-  // 本日まだ分析していない場合は0回として扱う
-  const usedCount = result[0]?.requestCount ?? 0;
+  const usedCount = await countTodayUsage(db, userId);
 
   return {
     dailyLimit: DAILY_ANALYSIS_LIMIT,
