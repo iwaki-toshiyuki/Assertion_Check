@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { env } from "@/lib/env";
 import { AnalysisForm } from "@/components/analysis/AnalysisForm";
 import AssertionGuideLink from "@/components/assertion/AssertionGuideLink";
@@ -23,9 +23,73 @@ export default function NewAnalysisPage() {
   // 分析処理で発生したエラーメッセージを画面表示するために保持する。
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  // 空白のみの入力も未入力として扱い、両方入力された場合のみ分析可能にする。
+  // 本日の残り分析可能回数を管理する
+  // nullはAPIから取得する前の状態を表す
+  const [remainingCount, setRemainingCount] = useState<number | null>(null);
+
+  // 1日に分析できる最大回数
+  const [dailyLimit, setDailyLimit] = useState(10);
+
+  // 新規作成画面を開いた際に、本日の分析可能回数を取得する
+  useEffect(() => {
+    let isActive = true;
+
+    const fetchAnalysisUsage = async () => {
+      try {
+        // Cognitoからアクセストークンを取得する
+        const session = await fetchAuthSession();
+        const accessToken = session.tokens?.accessToken?.toString();
+
+        if (!accessToken) {
+          throw new Error("認証情報を取得できませんでした");
+        }
+
+        // 本日の分析利用状況を取得する
+        const apiResponse = await fetch(`${env.apiBaseUrl}/api/analysis/usage`, {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        });
+
+        if (!apiResponse.ok) {
+          throw new Error("分析利用状況の取得に失敗しました");
+        }
+
+        const usage: {
+          dailyLimit: number;
+          usedCount: number;
+          remainingCount: number;
+        } = await apiResponse.json();
+
+        // 画面が表示されている場合のみStateを更新する
+        if (isActive) {
+          setDailyLimit(usage.dailyLimit);
+          setRemainingCount(usage.remainingCount);
+        }
+      } catch (error) {
+        console.error("分析利用状況の取得に失敗しました:", error);
+
+        if (isActive) {
+          setErrorMessage(
+            "本日の分析可能回数を取得できませんでした。画面を再読み込みしてください。",
+          );
+        }
+      }
+    };
+
+    void fetchAnalysisUsage();
+
+    return () => {
+      isActive = false;
+    };
+  }, []);
+
+  // 両方の入力欄が空白以外で入力され、かつ本日の分析可能回数が残っている場合のみ分析を許可する。
   const canAnalyze =
-    situation.trim().length > 0 && response.trim().length > 0;
+  situation.trim().length > 0 &&
+  response.trim().length > 0 &&
+  remainingCount !== null &&
+  remainingCount > 0;
 
   // 分析ボタン押下時の処理。
   // 入力内容を分析APIへ送信し、アサーション分析を実行する。
@@ -63,6 +127,18 @@ export default function NewAnalysisPage() {
         }),
       });
 
+      // 本日の分析回数の上限に達した場合は、専用メッセージを表示する
+      if (apiResponse.status === 429) {
+        setRemainingCount(0);
+
+        setErrorMessage(
+          "本日の分析回数の上限（10回）に達しました。明日以降に再度お試しください。",
+        );
+
+        return;
+      }
+
+      // その他のAPIエラーは従来どおり処理する
       if (!apiResponse.ok) {
         throw new Error("分析APIへのリクエストに失敗しました");
       }
@@ -113,6 +189,8 @@ export default function NewAnalysisPage() {
             isLoading={isLoading}
             errorMessage={errorMessage}
             canAnalyze={canAnalyze}
+            remainingCount={remainingCount}
+            dailyLimit={dailyLimit}
             onSituationChange={setSituation}
             onResponseChange={setResponse}
             onAnalyze={handleAnalyze}

@@ -6,6 +6,7 @@ import {
   timestamp,
   integer,
   text,
+  index
 } from 'drizzle-orm/pg-core';
 
 // アプリ内のユーザー情報を管理するテーブル
@@ -94,3 +95,28 @@ export const analysisResults = pgTable('analysis_results', {
     .defaultNow()
     .notNull(),
 });
+
+// AI分析の実行枠を確保した履歴を記録する
+export const analysisUsage = pgTable(
+  "analysis_usage",
+  {
+    id: bigserial("id", { mode: "number" }).primaryKey(),
+
+    // 分析を実行したユーザー
+    userId: bigint("user_id", { mode: "number" })
+      .notNull()
+      .references(() => users.id),
+
+    // AI分析の実行枠を確保した日時
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => [
+    // ユーザーごとの利用履歴を日時で検索しやすくする
+    index("analysis_usage_user_created_at_idx").on(
+      table.userId,
+      table.createdAt,
+    ),
+  ],
+);

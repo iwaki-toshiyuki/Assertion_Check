@@ -5,6 +5,8 @@ type AnalysisFormProps = {
   isLoading: boolean;
   errorMessage: string | null;
   canAnalyze: boolean;
+  remainingCount: number | null;
+  dailyLimit: number;
   onSituationChange: (value: string) => void;
   onResponseChange: (value: string) => void;
   onAnalyze: () => void;
@@ -17,6 +19,8 @@ export function AnalysisForm({
   isLoading,
   errorMessage,
   canAnalyze,
+  remainingCount,
+  dailyLimit,
   onSituationChange,
   onResponseChange,
   onAnalyze,
@@ -24,6 +28,18 @@ export function AnalysisForm({
   return (
     <section className="rounded-2xl bg-white p-8 shadow-sm">
       <div className="space-y-6">
+        {/* 本日の分析可能回数を表示する */}
+        <div
+          className={`rounded-lg p-4 text-sm font-medium ${
+            remainingCount === 0
+              ? "bg-red-50 text-red-700"
+              : "bg-emerald-50 text-emerald-800"
+          }`}
+        >
+          {remainingCount === null
+            ? "本日の分析可能回数を取得しています..."
+            : `本日の分析可能回数：残り${remainingCount}回 / ${dailyLimit}回`}
+        </div>
         <div>
           <label
             htmlFor="situation"
@@ -75,7 +91,7 @@ export function AnalysisForm({
         <button
           type="button"
           onClick={onAnalyze}
-          disabled={!canAnalyze || isLoading}
+          disabled={!canAnalyze || isLoading || remainingCount === null || remainingCount === 0}
           className="w-full rounded-lg bg-emerald-600 px-4 py-3 font-semibold text-white transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:bg-gray-300"
         >
           {isLoading ? "分析中..." : "分析する"}

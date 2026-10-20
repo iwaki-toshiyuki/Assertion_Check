@@ -17,8 +17,9 @@ app.use(cors({ origin: env.corsOrigin }));
 // ヘルスチェックAPI（認証不要）
 app.route("/health", health);
 
-// 分析APIにJWT認証を適用
+// 分析APIと、その配下のAPIにJWT認証を適用
 app.use("/api/analysis", authMiddleware);
+app.use("/api/analysis/*", authMiddleware);
 
 // 分析API
 app.route("/api/analysis", analysis);
