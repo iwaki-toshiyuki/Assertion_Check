@@ -371,7 +371,7 @@ Assertion_Check/
 
 | 項目 | 内容 |
 |---|---|
-| Node.js | 24（`.nvmrc` で指定） |
+| Node.js | 24.22.1（`.nvmrc` で指定） |
 | npm | パッケージ管理 |
 | Docker / Docker Compose | ローカルPostgreSQLの起動 |
 | AWSアカウント | Cognito・Bedrockの利用 |
@@ -389,7 +389,8 @@ cd Assertion_Check
 
 ### 7-3. Node.jsのバージョン設定
 
-本プロジェクトではNode.js 24を使用しています。
+本プロジェクトでは、Node.js 24.22.1を使用しています。
+セキュリティ修正が適用されたNode.jsを使用するため、.nvmrcでバージョンを指定しています。
 
 nvmを利用している場合、プロジェクトのルートディレクトリで以下を実行してください。
 
@@ -398,7 +399,17 @@ nvm install
 nvm use
 ```
 
-`.nvmrc` に記載されたNode.jsのバージョンが使用されます。
+.nvmrcに記載されたNode.jsのバージョンが使用されます。
+
+バージョンの確認：
+```bash
+node -v
+```
+
+以下が表示されれば正常です。
+```bash
+v24.22.1
+```
 
 ### 7-4. パッケージのインストール
 
