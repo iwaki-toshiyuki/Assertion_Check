@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "scripts": {
     "dev": "tsx watch src/index.ts",
-    "build": "esbuild src/lambda.ts --bundle --platform=node --target=node24 --format=esm --outfile=dist/lambda.mjs",
+    "build": "esbuild src/lambda.ts --bundle --platform=node --target=node24 --format=cjs --outfile=dist/lambda.cjs",
     "start": "tsx src/index.ts",
     "lint": "eslint .",
     "type-check": "tsc --noEmit"
