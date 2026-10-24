@@ -1,5 +1,5 @@
 import { and, eq, gte, lt, sql } from "drizzle-orm";
-import { db } from "./client.js";
+import { getDb } from "./client.js";
 import { analysisUsage, users } from "./schema.js";
 
 // 1ユーザーが1日に実行できるAI分析の最大回数
@@ -22,7 +22,7 @@ function getTodayRangeInJst() {
 
 // 指定ユーザーの本日の利用回数を取得する
 async function countTodayUsage(
-  database: Pick<typeof db, "select">,
+  database: Pick<Awaited<ReturnType<typeof getDb>>, "select">,
   userId: number,
 ): Promise<number> {
   const { start, end } = getTodayRangeInJst();
@@ -46,6 +46,8 @@ async function countTodayUsage(
 export async function consumeAnalysisQuota(
   userId: number,
 ): Promise<boolean> {
+  const db = await getDb();
+
   return db.transaction(async (tx) => {
     // 対象ユーザーの行をロックする
     await tx
@@ -73,6 +75,8 @@ export async function consumeAnalysisQuota(
 // 指定ユーザーの本日の分析利用状況を取得する
 // 利用状況の確認だけなので、分析回数は加算しない
 export async function getAnalysisUsage(userId: number) {
+  const db = await getDb();
+
   const usedCount = await countTodayUsage(db, userId);
 
   return {
