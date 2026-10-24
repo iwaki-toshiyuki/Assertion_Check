@@ -14,7 +14,9 @@ export const converseWithClaude = async (
   userPrompt: string,
 ): Promise<string> => {
   const command = new ConverseCommand({
-    modelId: "jp.anthropic.claude-haiku-4-5-20251001-v1:0",
+    modelId:
+      process.env.BEDROCK_MODEL_ID ??
+      "jp.anthropic.claude-haiku-4-5-20251001-v1:0",
 
     // AIへの指示をSystem Promptとして設定する
     system: [
