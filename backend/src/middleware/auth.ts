@@ -1,9 +1,13 @@
 import { CognitoJwtVerifier } from "aws-jwt-verify";
 import { createMiddleware } from "hono/factory";
 import { env } from "../env";
+import type { APIGatewayProxyEventV2WithJWTAuthorizer, } from "aws-lambda";
 
 // 認証後にHonoのコンテキストで共有する情報
 export type AuthEnv = {
+  Bindings: {
+    event?: APIGatewayProxyEventV2WithJWTAuthorizer;
+  };
   Variables: {
     cognitoSub: string;
     accessToken: string;
@@ -48,13 +52,36 @@ export const authMiddleware = createMiddleware<AuthEnv>(async (c, next) => {
   let cognitoSub: string;
 
   try {
-    // Cognitoの公開鍵を使用してJWTを検証する
-    const payload = await verifier.verify(token);
+    if (env.isLambda) {
+      // API Gatewayが検証したJWTクレームを取得する
+      const event = c.env?.event;
 
-    // 検証済みJWTからCognitoユーザーIDを取得する
-    cognitoSub = payload.sub;
+      const claims = event?.requestContext?.authorizer?.jwt?.claims;
+
+      // 検証済みJWTクレームが存在しない場合は認証失敗
+      if (!claims) {
+        return c.json({ error: "認証に失敗しました" }, 401);
+      }
+
+      // Cognitoのアクセストークンであることを確認する
+      if (
+        claims.token_use !== "access" ||
+        claims.client_id !== env.cognitoAppClientId ||
+        typeof claims.sub !== "string" ||
+        !claims.sub
+      ) {
+        return c.json({ error: "認証に失敗しました" }, 401);
+      }
+
+      cognitoSub = claims.sub;
+    } else {
+      // ローカル環境では従来どおりCognitoのJWTを検証する
+      const payload = await verifier.verify(token);
+
+      cognitoSub = payload.sub;
+    }
   } catch (error) {
-    console.error("JWT検証に失敗しました:", error);
+    console.error("JWT認証処理に失敗しました:", error);
 
     return c.json({ error: "認証に失敗しました" }, 401);
   }
