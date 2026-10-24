@@ -4,6 +4,8 @@
   "scripts": {
     "dev": "tsx watch src/index.ts",
     "build": "esbuild src/lambda.ts --bundle --platform=node --target=node24 --format=cjs --outfile=dist/lambda.cjs",
+    "build:migrate": "esbuild src/migrate.ts --bundle --platform=node --target=node24 --format=cjs --outfile=dist/migrate.cjs",
+    "build:check-db": "esbuild src/check-db.ts --bundle --platform=node --target=node24 --format=cjs --outfile=dist/check-db.cjs",
     "start": "tsx src/index.ts",
     "lint": "eslint .",
     "type-check": "tsc --noEmit"
