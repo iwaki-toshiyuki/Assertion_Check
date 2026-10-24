@@ -3,6 +3,7 @@ import { drizzle } from "drizzle-orm/node-postgres";
 import { Pool } from "pg";
 import * as schema from "./schema.js";
 import { getDbCredentials } from "./secrets.js";
+import { readFileSync } from "node:fs";
 
 // DrizzleのDBインスタンスの型
 type Database = ReturnType<typeof drizzle<typeof schema>>;
@@ -38,12 +39,25 @@ async function createDb(): Promise<Database> {
     throw new Error("DB_PORTが不正です");
   }
 
+  // RDSのCA証明書を読み込み、接続先の証明書を検証する
+  const ca = readFileSync(
+    "/var/task/certs/ap-northeast-1-bundle.pem",
+    "utf8"
+  );
+
   const pool = new Pool({
     host,
     port,
     database,
     user: username,
     password,
+
+    // RDSへの通信を暗号化し、サーバー証明書を検証する
+    ssl: {
+      ca,
+      rejectUnauthorized: true,
+    },
+
     max: 5,
     connectionTimeoutMillis: 5000,
     idleTimeoutMillis: 30000,

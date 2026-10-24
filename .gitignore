@@ -15,3 +15,8 @@ design/
 .next/
 dist/
 *.tsbuildinfo
+
+
+# Lambdaデプロイ用の生成物
+deploy/
+lambda.zip

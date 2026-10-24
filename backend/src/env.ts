@@ -6,4 +6,7 @@ export const env = {
   cognitoRegion: process.env.COGNITO_REGION,
   cognitoUserPoolId: process.env.COGNITO_USER_POOL_ID,
   cognitoAppClientId: process.env.COGNITO_APP_CLIENT_ID,
+
+  // AWS Lambda実行環境かどうかを判定する
+  isLambda: Boolean(process.env.AWS_LAMBDA_FUNCTION_NAME),
 };
