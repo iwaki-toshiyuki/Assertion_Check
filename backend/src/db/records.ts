@@ -1,9 +1,12 @@
 import { and, desc, eq } from "drizzle-orm";
-import { db } from "./client.js";
+import { getDb } from "./client.js";
 import { records, analysisResults } from "./schema.js";
+
 
 // 指定したユーザーの分析履歴を新しい順に取得する
 export async function findRecordsByUserId(userId: number) {
+  const db = await getDb();
+
   return db
     .select({
       id: records.id,
@@ -28,6 +31,8 @@ export async function findRecordByIdAndUserId(
   recordId: number,
   userId: number,
 ) {
+  const db = await getDb();
+
   const [record] = await db
     .select({
       id: records.id,

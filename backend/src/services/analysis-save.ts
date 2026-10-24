@@ -1,4 +1,4 @@
-import { db } from "../db/client.js";
+import { getDb } from "../db/client.js";
 import { records, analysisResults } from "../db/schema.js";
 import { analysisResponseSchema } from "../schemas/analysis.js";
 import { z } from "zod";
@@ -20,6 +20,10 @@ export async function saveAnalysis({
   response,
   analysisResult,
 }: SaveAnalysisInput) {
+  // 初期化済みのDB接続を取得する
+  const db = await getDb();
+
+  // 分析内容と分析結果をトランザクションで保存する
   return db.transaction(async (tx) => {
     // ユーザーが入力した分析内容を保存する
     const [record] = await tx
