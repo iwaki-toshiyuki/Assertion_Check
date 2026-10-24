@@ -1,7 +1,6 @@
 import { eq } from "drizzle-orm";
 import { getDb } from "./client.js";
 import { users } from "./schema.js";
-import { getCognitoNickname } from "../lib/cognito.js";
 
 // Cognitoのsubを使用してDBユーザーを検索する
 export async function findUserByCognitoSub(cognitoSub: string) {
@@ -35,10 +34,10 @@ export async function createUser(
   return user;
 }
 
-// Cognitoの認証情報をもとにDBユーザーを取得・登録する
+// Cognitoのsubを使用してDBユーザーを取得・登録する
 export async function findOrCreateUser(
   cognitoSub: string,
-  accessToken: string,
+  username: string,
 ) {
   // 既存ユーザーが登録されているか確認する
   const existingUser = await findUserByCognitoSub(cognitoSub);
@@ -47,9 +46,6 @@ export async function findOrCreateUser(
     return existingUser;
   }
 
-  // 未登録の場合はCognitoからユーザー名を取得する
-  const nickname = await getCognitoNickname(accessToken);
-
   const db = await getDb();
 
   // Cognitoのsubが重複した場合は既存ユーザーを取得する
@@ -57,7 +53,7 @@ export async function findOrCreateUser(
     .insert(users)
     .values({
       cognitoSub,
-      username: nickname,
+      username,
     })
     .onConflictDoUpdate({
       target: users.cognitoSub,

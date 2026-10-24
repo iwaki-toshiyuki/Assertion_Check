@@ -2,7 +2,7 @@ import { Hono } from "hono";
 import { analysisRequestSchema } from "../schemas/analysis";
 import { analyzeCommunication } from "../services/analysis";
 import { saveAnalysis } from "../services/analysis-save";
-import { findOrCreateUser } from "../db/users";
+import { findUserByCognitoSub } from "../db/users.js";
 import type { AuthEnv } from "../middleware/auth";
 import { consumeAnalysisQuota, getAnalysisUsage, } from "../db/analysis-usage.js";
 
@@ -11,12 +11,19 @@ const analysis = new Hono<AuthEnv>();
 // ログインユーザーの本日の分析利用状況を取得する
 analysis.get("/usage", async (c) => {
   try {
-    // JWT認証ミドルウェアで取得したCognitoの認証情報を取得する
+    // JWT認証済みユーザーのCognito subを取得する
     const cognitoSub = c.get("cognitoSub");
-    const accessToken = c.get("accessToken");
 
-    // Cognitoユーザーに対応するDBユーザーを取得・登録する
-    const user = await findOrCreateUser(cognitoSub, accessToken);
+    // PostgreSQLから登録済みユーザーを取得する
+    const user = await findUserByCognitoSub(cognitoSub);
+
+    // DBユーザーが存在しない場合は同期を促す
+    if (!user) {
+      return c.json(
+        { error: "ユーザー情報が登録されていません。再ログインしてください。" },
+        404,
+      );
+    }
 
     // 本日の利用回数と残り回数を取得する
     const usage = await getAnalysisUsage(user.id);
@@ -63,12 +70,19 @@ analysis.post("/", async (c) => {
   }
 
   try {
-    // JWT認証ミドルウェアで取得したCognitoの認証情報を取得する
+    // JWT認証済みユーザーのCognito subを取得する
     const cognitoSub = c.get("cognitoSub");
-    const accessToken = c.get("accessToken");
 
-    // Cognitoユーザーに対応するDBユーザーを取得・登録する
-    const user = await findOrCreateUser(cognitoSub, accessToken);
+    // PostgreSQLから登録済みユーザーを取得する
+    const user = await findUserByCognitoSub(cognitoSub);
+
+    // DBユーザーが存在しない場合は同期を促す
+    if (!user) {
+      return c.json(
+        { error: "ユーザー情報が登録されていません。再ログインしてください。" },
+        404,
+      );
+    }
 
     // Bedrockを呼び出す前に、当日の分析実行枠を1回分確保する
     const canAnalyze = await consumeAnalysisQuota(user.id);

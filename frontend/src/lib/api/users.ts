@@ -1,4 +1,7 @@
-import { fetchAuthSession } from "aws-amplify/auth";
+import {
+  fetchAuthSession,
+  fetchUserAttributes,
+} from "aws-amplify/auth";
 import { env } from "@/lib/env";
 
 // DBに保存されているユーザー情報の型
@@ -18,12 +21,24 @@ export async function syncDbUser(): Promise<DbUser> {
     throw new Error("認証情報を取得できませんでした");
   }
 
-  // JWTを付与してDBユーザーの取得・作成APIを呼び出す
+  // Cognitoからユーザーの表示名を取得する
+  const attributes = await fetchUserAttributes();
+  const username = attributes.nickname?.trim();
+
+  if (!username) {
+    throw new Error("Cognitoからユーザー名を取得できませんでした");
+  }
+
+  // JWTと表示名を送信し、DBユーザーを登録・同期する
   const response = await fetch(`${env.apiBaseUrl}/api/users/me`, {
-    method: "GET",
+    method: "POST",
     headers: {
       Authorization: `Bearer ${accessToken}`,
+      "Content-Type": "application/json",
     },
+    body: JSON.stringify({
+      username,
+    }),
     cache: "no-store",
   });
 

@@ -10,7 +10,6 @@ export type AuthEnv = {
   };
   Variables: {
     cognitoSub: string;
-    accessToken: string;
   };
 };
 
@@ -88,9 +87,6 @@ export const authMiddleware = createMiddleware<AuthEnv>(async (c, next) => {
 
   // 認証済みユーザーのIDを後続のAPIに渡す
   c.set("cognitoSub", cognitoSub);
-
-  // Cognitoのユーザー属性取得に使用するアクセストークンを保存する
-  c.set("accessToken", token);
 
   // 認証成功後、次の処理へ進む
   await next();
