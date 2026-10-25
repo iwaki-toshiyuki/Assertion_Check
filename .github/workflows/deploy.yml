@@ -1,0 +1,181 @@
+# mainブランチのCIが成功した場合に、本番環境を自動デプロイする。
+name: Deploy Production
+
+on:
+  workflow_run:
+    workflows: ["CI"]
+    types: [completed]
+    branches: [main]
+
+# GitHub ActionsからAWSへOIDC認証するための権限。
+permissions:
+  id-token: write
+  contents: read
+
+# 本番環境へのデプロイが重複しないようにする。
+concurrency:
+  group: production-deploy
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: Deploy Lambda and Amplify
+
+    # mainブランチへのpushによるCIが成功した場合のみ実行する。
+    if: >-
+      ${{
+        github.event.workflow_run.conclusion == 'success' &&
+        github.event.workflow_run.head_branch == 'main' &&
+        github.event.workflow_run.event == 'push' &&
+        github.event.workflow_run.head_repository.full_name == github.repository
+      }}
+
+    runs-on: ubuntu-latest
+
+    # デプロイ処理全体のタイムアウト。
+    timeout-minutes: 40
+
+    steps:
+      # CIを通過したコミットのコードを取得する。
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
+          persist-credentials: false
+
+      # CIを通過したコミットが現在のmainの最新コミットか確認する。
+      - name: Verify latest main commit
+        env:
+          DEPLOY_SHA: ${{ github.event.workflow_run.head_sha }}
+        run: |
+          LATEST_SHA=$(git ls-remote origin refs/heads/main | cut -f1)
+
+          if [ -z "$LATEST_SHA" ]; then
+            echo "mainの最新コミットを取得できませんでした。"
+            exit 1
+          fi
+
+          if [ "$DEPLOY_SHA" != "$LATEST_SHA" ]; then
+            echo "デプロイ対象が最新のmainではないため中止します。"
+            echo "CI commit: $DEPLOY_SHA"
+            echo "Latest main: $LATEST_SHA"
+            exit 1
+          fi
+
+          echo "最新のmainであることを確認しました。"
+
+      # Node.js 24を使用する。
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+          cache-dependency-path: backend/package-lock.json
+
+      # バックエンドの依存関係をインストールする。
+      - name: Install dependencies
+        working-directory: backend
+        run: npm ci
+
+      # Lambda用のコードをビルドする。
+      - name: Build Lambda
+        working-directory: backend
+        run: npm run build
+
+      # lambda.cjsをZIPのルート直下に配置して圧縮する。
+      - name: Create deployment package
+        working-directory: backend/dist
+        run: zip -j lambda.zip lambda.cjs
+
+      # GitHub ActionsのOIDC認証を使用してAWSへ接続する。
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::434220685055:role/AssertionCheckGitHubActionsDeployRole
+          aws-region: ap-northeast-1
+
+      # デプロイ直前にもmainの最新コミットを確認する。
+      - name: Verify latest main before deployment
+        env:
+          DEPLOY_SHA: ${{ github.event.workflow_run.head_sha }}
+        run: |
+          LATEST_SHA=$(git ls-remote origin refs/heads/main | cut -f1)
+
+          if [ -z "$LATEST_SHA" ] || [ "$DEPLOY_SHA" != "$LATEST_SHA" ]; then
+            echo "mainが更新されたか、最新コミットを取得できないため中止します。"
+            exit 1
+          fi
+
+          echo "デプロイ直前の確認が完了しました。"
+
+      # 本番Lambdaのコードを更新する。
+      - name: Deploy Lambda
+        run: |
+          aws lambda update-function-code \
+            --function-name assertion-check-backend \
+            --zip-file fileb://backend/dist/lambda.zip \
+            --region ap-northeast-1
+
+      # Lambdaのコード更新が完了するまで待機する。
+      - name: Wait for Lambda deployment
+        run: |
+          aws lambda wait function-updated \
+            --function-name assertion-check-backend \
+            --region ap-northeast-1
+
+      # Amplify Hostingのmainブランチをデプロイする。
+      # ジョブIDを取得し、デプロイ完了まで監視する。
+      - name: Deploy Amplify
+        run: |
+          JOB_ID=$(aws amplify start-job \
+            --app-id d5z5li7pr0lj6 \
+            --branch-name main \
+            --job-type RELEASE \
+            --region ap-northeast-1 \
+            --query 'jobSummary.jobId' \
+            --output text)
+
+          if [ -z "$JOB_ID" ] || [ "$JOB_ID" = "None" ]; then
+            echo "AmplifyのジョブIDを取得できませんでした。"
+            exit 1
+          fi
+
+          echo "Amplifyデプロイ開始: Job ID = $JOB_ID"
+
+          # 最大30分間、30秒ごとにデプロイ状況を確認する。
+          for i in {1..60}; do
+            echo "Amplifyデプロイ確認: ${i}/60回目"
+
+            STATUS=$(aws amplify get-job \
+              --app-id d5z5li7pr0lj6 \
+              --branch-name main \
+              --job-id "$JOB_ID" \
+              --region ap-northeast-1 \
+              --query 'job.summary.status' \
+              --output text)
+
+            echo "Amplifyデプロイ状況: $STATUS"
+
+            case "$STATUS" in
+              SUCCEED)
+                echo "Amplifyのデプロイが成功しました。"
+                exit 0
+                ;;
+              FAILED|CANCELLED)
+                echo "Amplifyのデプロイが失敗またはキャンセルされました。"
+                exit 1
+                ;;
+              PENDING|PROVISIONING|RUNNING)
+                echo "デプロイ待機中、または処理中です。"
+                ;;
+              *)
+                echo "想定外のステータスです: $STATUS"
+                exit 1
+                ;;
+            esac
+
+            sleep 30
+          done
+
+          echo "Amplifyのデプロイが30分以内に完了しませんでした。"
+          exit 1
