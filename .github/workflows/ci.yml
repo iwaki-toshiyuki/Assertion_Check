@@ -100,6 +100,6 @@ jobs:
       - name: Type check
         run: npm run type-check
 
-      # esbuild で AWS Lambda にデプロイできる1ファイル（dist/lambda.mjs）にまとめられるかを確認する。
+      # esbuild で AWS Lambda にデプロイするCommonJS形式のファイル（dist/lambda.cjs）を生成できるか確認する。
       - name: Build
         run: npm run build
