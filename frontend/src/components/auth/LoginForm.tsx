@@ -1,9 +1,12 @@
 "use client";
 
-import { useState, type FormEvent } from "react";
+import { useEffect, useRef, useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import { loginUser } from "@/lib/auth/login";
 import { syncDbUser } from "@/lib/api/users";
+import { fetchCurrentUser } from "@/lib/auth/current-user";
+
+type AuthStatus = "checking" | "signedOut" | "syncing" | "syncError" | "redirecting" | "authError";
 
 // ログインフォームの表示・入力管理・送信処理を担当する
 export default function LoginForm() {
@@ -13,49 +16,183 @@ export default function LoginForm() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
-  // ログイン処理の状態とエラーメッセージを管理する
-  const [isLoading, setIsLoading] = useState(false);
+  // 認証状態を管理する
+  const [authStatus, setAuthStatus] = useState<AuthStatus>("checking");
+
+  // エラーメッセージを管理する
   const [error, setError] = useState("");
+
+  // 二重送信を防止する
+  const isSubmittingRef = useRef(false);
+
+  // ログイン処理中の表示を管理する
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  useEffect(() => {
+    let isActive = true;
+
+    // ログイン済みユーザーのDB連携を確認する
+    const checkAuth = async () => {
+      try {
+        const user = await fetchCurrentUser();
+
+        if (!isActive) return;
+
+        if (!user) {
+          setAuthStatus("signedOut");
+          return;
+        }
+
+        setAuthStatus("syncing");
+
+        try {
+          await syncDbUser();
+
+          if (!isActive) return;
+
+          setAuthStatus("redirecting");
+          router.replace("/");
+        } catch (error) {
+          if (!isActive) return;
+
+          console.error("DB連携に失敗しました:", error);
+          setError("DBユーザーの連携に失敗しました。再試行してください。");
+          setAuthStatus("syncError");
+        }
+      } catch (error) {
+        if (!isActive) return;
+
+        console.error("認証状態の確認に失敗しました:", error);
+        setError("認証状態を確認できませんでした。");
+        setAuthStatus("authError");
+      }
+    };
+
+    void checkAuth();
+
+    return () => {
+      isActive = false;
+    };
+  }, [router]);
+
+  // DB連携を再試行する
+  const handleRetrySync = async () => {
+    if (isSubmittingRef.current) return;
+
+    isSubmittingRef.current = true;
+    setError("");
+    setAuthStatus("syncing");
+
+    try {
+      await syncDbUser();
+
+      setAuthStatus("redirecting");
+      router.replace("/");
+    } catch (error) {
+      console.error("DB連携の再試行に失敗しました:", error);
+      setError("DBユーザーの連携に失敗しました。再試行してください。");
+      setAuthStatus("syncError");
+    } finally {
+      isSubmittingRef.current = false;
+    }
+  };
 
   // ログインボタンを押したときの処理
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
-    setIsLoading(true);
+    if (isSubmittingRef.current || authStatus !== "signedOut") return;
+
+    isSubmittingRef.current = true;
+    setIsSubmitting(true);
     setError("");
 
     try {
       // Cognitoにログインをリクエストする
       const result = await loginUser({ email, password });
 
-      // Cognitoログイン成功後、DBユーザーを取得・作成する
       if (result.isSignedIn) {
-        await syncDbUser();
+        setAuthStatus("syncing");
 
-        // DB連携完了後にトップページへ移動する
-        router.push("/");
+        try {
+          // Cognitoログイン成功後、DBユーザーを取得・作成する
+          await syncDbUser();
+
+          setAuthStatus("redirecting");
+          router.replace("/");
+        } catch (error) {
+          console.error("DB連携に失敗しました:", error);
+          setError("ログインには成功しましたが、DB連携に失敗しました。再試行してください。");
+          setAuthStatus("syncError");
+        }
+
         return;
       }
 
       // 追加の認証手順が必要な場合
       if (result.nextStep.signInStep === "CONFIRM_SIGN_UP") {
+        setAuthStatus("redirecting");
         router.push(`/signup/confirm?email=${encodeURIComponent(email)}`);
         return;
       }
 
       setError("追加の認証手順が必要です。");
     } catch (error) {
-      // Cognitoから返されたエラーを表示する
+      console.error("ログインに失敗しました:", error);
+
       setError(
         error instanceof Error
           ? error.message
           : "ログインに失敗しました。",
       );
     } finally {
-      // 成功・失敗にかかわらずローディング状態を解除する
-      setIsLoading(false);
+      isSubmittingRef.current = false;
+      setIsSubmitting(false);
     }
   };
+
+  // 初回の認証状態確認中
+  if (authStatus === "checking") {
+    return <p>ログイン状態を確認しています...</p>;
+  }
+
+  // DB連携中
+  if (authStatus === "syncing") {
+    return <p>ユーザー情報を確認しています...</p>;
+  }
+
+  // 画面遷移中
+  if (authStatus === "redirecting") {
+    return <p>画面を移動しています...</p>;
+  }
+
+  // DB連携失敗時は再試行ボタンを表示する
+  if (authStatus === "syncError") {
+    return (
+      <div className="space-y-4">
+        <p role="alert" className="text-red-600">
+          {error}
+        </p>
+
+        <button
+          type="button"
+          onClick={handleRetrySync}
+          className="w-full rounded-lg bg-emerald-600 px-4 py-3 font-semibold text-white hover:bg-emerald-700"
+        >
+          DB連携を再試行
+        </button>
+      </div>
+    );
+  }
+
+  // 認証状態の確認自体に失敗した場合
+  if (authStatus === "authError") {
+    return (
+      <p role="alert" className="text-red-600">
+        {error}
+      </p>
+    );
+  }
 
   return (
     <form onSubmit={handleSubmit} className="space-y-5">
@@ -110,10 +247,10 @@ export default function LoginForm() {
       {/* ログインボタン */}
       <button
         type="submit"
-        disabled={isLoading}
+        disabled={authStatus !== "signedOut" || isSubmitting}
         className="w-full rounded-lg bg-emerald-600 px-4 py-3 font-semibold text-white transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:bg-gray-300"
       >
-        {isLoading ? "ログイン中..." : "ログイン"}
+        {isSubmitting ? "ログイン中..." : "ログイン"}
       </button>
     </form>
   );
