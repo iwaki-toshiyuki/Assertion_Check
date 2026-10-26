@@ -82,10 +82,19 @@ jobs:
         working-directory: backend
         run: npm run build
 
-      # lambda.cjsをZIPのルート直下に配置して圧縮する。
+      # Lambda用コードとRDS接続用のSSL証明書をZIPに含める。
       - name: Create deployment package
-        working-directory: backend/dist
-        run: zip -j lambda.zip lambda.cjs
+        working-directory: backend
+        run: |
+          mkdir -p dist/certs
+          cp certs/ap-northeast-1-bundle.pem dist/certs/
+
+          cd dist
+          zip -r lambda.zip lambda.cjs certs/
+
+          # 証明書がZIPに含まれていることを確認する。
+          unzip -l lambda.zip
+          unzip -p lambda.zip certs/ap-northeast-1-bundle.pem > /dev/null
 
       # GitHub ActionsのOIDC認証を使用してAWSへ接続する。
       - name: Configure AWS credentials
