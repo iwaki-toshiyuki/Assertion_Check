@@ -4,10 +4,11 @@ import type { AnalysisRecord } from "@/types/records";
 // 履歴カードに渡すデータの型
 type RecordCardProps = {
   record: AnalysisRecord;
+  page: number;
 };
 
 // 分析履歴1件分をカード形式で表示するコンポーネント
-export function RecordCard({ record }: RecordCardProps) {
+export function RecordCard({ record, page }: RecordCardProps) {
   // 保存日時を日本語形式で表示する
   const formattedDate = new Date(record.createdAt).toLocaleDateString(
     "ja-JP",
@@ -20,7 +21,7 @@ export function RecordCard({ record }: RecordCardProps) {
 
   return (
     <Link
-      href={`/analysis/${record.id}`}
+      href={`/analysis/${record.id}?fromPage=${page}`}
       className="block rounded-xl border border-emerald-100 bg-white p-5 shadow-sm transition hover:border-emerald-300 hover:shadow-md"
     >
       <article>

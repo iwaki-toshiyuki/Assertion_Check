@@ -1,11 +1,18 @@
-import { and, desc, eq } from "drizzle-orm";
+import { and, count, desc, eq } from "drizzle-orm";
 import { getDb } from "./client.js";
 import { records, analysisResults } from "./schema.js";
 
 
-// 指定したユーザーの分析履歴を新しい順に取得する
-export async function findRecordsByUserId(userId: number) {
+// 指定したユーザーの分析履歴をページ単位で取得する
+export async function findRecordsByUserId(
+  userId: number,
+  page: number,
+  limit: number,
+) {
   const db = await getDb();
+
+  // 取得開始位置を計算する
+  const offset = (page - 1) * limit;
 
   return db
     .select({
@@ -23,7 +30,9 @@ export async function findRecordsByUserId(userId: number) {
       eq(records.id, analysisResults.recordId),
     )
     .where(eq(records.userId, userId))
-    .orderBy(desc(records.createdAt), desc(records.id));
+    .orderBy(desc(records.createdAt), desc(records.id))
+    .limit(limit)
+    .offset(offset);
 }
 
 // 指定したユーザーが所有する分析履歴の詳細を取得する
@@ -60,4 +69,22 @@ export async function findRecordByIdAndUserId(
     .limit(1);
 
   return record;
+}
+
+// 指定したユーザーの分析履歴の総件数を取得する
+export async function countRecordsByUserId(userId: number) {
+  const db = await getDb();
+
+  const [result] = await db
+    .select({
+      total: count(),
+    })
+    .from(records)
+    .innerJoin(
+      analysisResults,
+      eq(records.id, analysisResults.recordId),
+    )
+    .where(eq(records.userId, userId));
+
+  return result.total;
 }
