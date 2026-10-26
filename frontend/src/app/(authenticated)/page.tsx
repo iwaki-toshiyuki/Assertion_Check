@@ -6,7 +6,11 @@ import { fetchAuthSession } from "aws-amplify/auth";
 import { env } from "@/lib/env";
 import { RecordCard } from "@/components/records/RecordCard";
 import AssertionGuideLink from "@/components/assertion/AssertionGuideLink";
-import type { AnalysisRecord , Pagination, PaginatedRecordsResponse, } from "@/types/records";
+import type {
+  AnalysisRecord,
+  Pagination,
+  PaginatedRecordsResponse,
+} from "@/types/records";
 
 // ホーム画面。ログインユーザーの分析履歴を一覧表示する。
 export default function Home() {
@@ -25,68 +29,122 @@ export default function Home() {
   // APIから取得したページネーション情報
   const [pagination, setPagination] = useState<Pagination | null>(null);
 
- useEffect(() => {
-  // ページ切り替え時に古いリクエスト結果が反映されないようにする
-  let isActive = true;
+  // URLからページ番号を取得できたかどうか
+  const [isPageReady, setIsPageReady] = useState(false);
 
-  const fetchRecords = async () => {
-    setIsLoading(true);
-    setErrorMessage(null);
+  // URLのクエリパラメータからページ番号を取得する
+  useEffect(() => {
+    const syncPageFromUrl = () => {
+      const params = new URLSearchParams(window.location.search);
+      const pageParam = params.get("page");
 
-    try {
-      const session = await fetchAuthSession();
-      const accessToken = session.tokens?.accessToken?.toString();
+      const parsedPage = Number(pageParam);
 
-      if (!accessToken) {
-        throw new Error("認証情報を取得できませんでした");
-      }
+      const initialPage =
+        pageParam !== null &&
+        Number.isSafeInteger(parsedPage) &&
+        parsedPage > 0
+          ? parsedPage
+          : 1;
 
-      // 現在のページ番号を指定して履歴を取得する
-      const response = await fetch(
-        `${env.apiBaseUrl}/api/records?page=${page}`,
-        {
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-          },
-          cache: "no-store",
-        },
-      );
+      setPage(initialPage);
+      setIsPageReady(true);
+    };
 
-      if (!response.ok) {
-        throw new Error("分析履歴の取得に失敗しました");
-      }
+    syncPageFromUrl();
 
-      const data: PaginatedRecordsResponse = await response.json();
+    // ブラウザの戻る・進む操作にも対応する
+    window.addEventListener("popstate", syncPageFromUrl);
 
-      if (!isActive) {
-        return;
-      }
+    return () => {
+      window.removeEventListener("popstate", syncPageFromUrl);
+    };
+  }, []);
 
-      setRecords(data.records);
-      setPagination(data.pagination);
-    } catch (error) {
-      if (!isActive) {
-        return;
-      }
-
-      console.error("分析履歴の取得に失敗しました:", error);
-
-      setErrorMessage(
-        "分析履歴を取得できませんでした。時間をおいて再度お試しください。",
-      );
-    } finally {
-      if (isActive) {
-        setIsLoading(false);
-      }
+  // ページ番号が確定したら分析履歴を取得する
+  useEffect(() => {
+    // URLのページ番号を取得するまではAPIを呼び出さない
+    if (!isPageReady) {
+      return;
     }
-  };
 
-  void fetchRecords();
+    // ページ切り替え時に古いリクエスト結果が反映されないようにする
+    let isActive = true;
+
+    const fetchRecords = async () => {
+      setIsLoading(true);
+      setErrorMessage(null);
+
+      try {
+        const session = await fetchAuthSession();
+        const accessToken = session.tokens?.accessToken?.toString();
+
+        if (!accessToken) {
+          throw new Error("認証情報を取得できませんでした");
+        }
+
+        // 現在のページ番号を指定して履歴を取得する
+        const response = await fetch(
+          `${env.apiBaseUrl}/api/records?page=${page}`,
+          {
+            headers: {
+              Authorization: `Bearer ${accessToken}`,
+            },
+            cache: "no-store",
+          },
+        );
+
+        if (!response.ok) {
+          throw new Error("分析履歴の取得に失敗しました");
+        }
+
+        const data: PaginatedRecordsResponse = await response.json();
+
+        if (!isActive) {
+          return;
+        }
+
+        setRecords(data.records);
+        setPagination(data.pagination);
+      } catch (error) {
+        if (!isActive) {
+          return;
+        }
+
+        console.error("分析履歴の取得に失敗しました:", error);
+
+        setErrorMessage(
+          "分析履歴を取得できませんでした。時間をおいて再度お試しください。",
+        );
+      } finally {
+        if (isActive) {
+          setIsLoading(false);
+        }
+      }
+    };
+
+    void fetchRecords();
 
     return () => {
       isActive = false;
     };
-  }, [page]);
+  }, [page, isPageReady]);
+
+  // ページ切り替え時にURLも更新する
+  const changePage = (newPage: number) => {
+    if (
+      newPage < 1 ||
+      (pagination && newPage > pagination.totalPages)
+    ) {
+      return;
+    }
+
+    const url = new URL(window.location.href);
+    url.searchParams.set("page", String(newPage));
+
+    window.history.pushState(null, "", url);
+    setPage(newPage);
+  };
 
   return (
     <main className="min-h-full bg-emerald-50 px-4 py-8">
@@ -146,7 +204,11 @@ export default function Home() {
               {/* 分析履歴一覧 */}
               <div className="space-y-4">
                 {records.map((record) => (
-                  <RecordCard key={record.id} record={record} />
+                  <RecordCard
+                    key={record.id}
+                    record={record}
+                    page={page}
+                  />
                 ))}
               </div>
 
@@ -158,8 +220,8 @@ export default function Home() {
                 >
                   <button
                     type="button"
-                    onClick={() => setPage((prev) => prev - 1)}
-                    disabled={page <= 1}
+                    onClick={() => changePage(page - 1)}
+                    disabled={page <= 1 || isLoading}
                     className="rounded-lg bg-emerald-600 px-4 py-2 text-white transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:bg-gray-300"
                   >
                     前へ
@@ -171,8 +233,10 @@ export default function Home() {
 
                   <button
                     type="button"
-                    onClick={() => setPage((prev) => prev + 1)}
-                    disabled={page >= pagination.totalPages}
+                    onClick={() => changePage(page + 1)}
+                    disabled={
+                      page >= pagination.totalPages || isLoading
+                    }
                     className="rounded-lg bg-emerald-600 px-4 py-2 text-white transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:bg-gray-300"
                   >
                     次へ

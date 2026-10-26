@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { useParams } from "next/navigation";
+import { useParams , useSearchParams } from "next/navigation";
 import { fetchAuthSession } from "aws-amplify/auth";
 import { env } from "@/lib/env";
 import { AnalysisResult } from "@/components/analysis/AnalysisResult";
@@ -14,6 +14,20 @@ import type { AnalysisResultData } from "@/types/analysis";
 export default function AnalysisHistoryDetailPage() {
   const params = useParams<{ id: string }>();
   const recordId = params.id;
+
+  // 履歴一覧で表示していたページ番号を取得する
+const searchParams = useSearchParams();
+const fromPageParam = searchParams.get("fromPage");
+
+// 不正なページ番号の場合は1ページ目に戻す
+const parsedPage = Number(fromPageParam);
+
+const fromPage =
+  fromPageParam !== null &&
+  Number.isSafeInteger(parsedPage) &&
+  parsedPage > 0
+    ? parsedPage
+    : 1;
 
   // APIから取得した分析履歴の詳細情報を管理する。
   const [record, setRecord] = useState<AnalysisRecordDetail | null>(null);
@@ -145,13 +159,13 @@ export default function AnalysisHistoryDetailPage() {
           </p>
         )}
 
-        {/* ホーム画面へ戻るリンク */}
+        {/* 履歴一覧へ戻るリンク */}
         <div className="mt-8 text-center">
           <Link
-            href="/"
+            href={`/?page=${fromPage}`}
             className="font-semibold text-emerald-700 hover:underline"
           >
-            ホームへ戻る
+            履歴一覧に戻る
           </Link>
         </div>
       </div>
