@@ -6,7 +6,7 @@ import { fetchAuthSession } from "aws-amplify/auth";
 import { env } from "@/lib/env";
 import { RecordCard } from "@/components/records/RecordCard";
 import AssertionGuideLink from "@/components/assertion/AssertionGuideLink";
-import type { AnalysisRecord } from "@/types/records";
+import type { AnalysisRecord , Pagination, PaginatedRecordsResponse, } from "@/types/records";
 
 // ホーム画面。ログインユーザーの分析履歴を一覧表示する。
 export default function Home() {
@@ -19,45 +19,74 @@ export default function Home() {
   // データ取得時のエラーメッセージを管理する。
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  useEffect(() => {
-    // ホーム画面表示時に分析履歴を取得する。
-    const fetchRecords = async () => {
-      try {
-        const session = await fetchAuthSession();
-        const accessToken = session.tokens?.accessToken?.toString();
+  // 現在のページ番号
+  const [page, setPage] = useState(1);
 
-        if (!accessToken) {
-          throw new Error("認証情報を取得できませんでした");
-        }
+  // APIから取得したページネーション情報
+  const [pagination, setPagination] = useState<Pagination | null>(null);
 
-        // JWTを付与してログインユーザーの分析履歴を取得する。
-        const response = await fetch(`${env.apiBaseUrl}/api/records`, {
+ useEffect(() => {
+  // ページ切り替え時に古いリクエスト結果が反映されないようにする
+  let isActive = true;
+
+  const fetchRecords = async () => {
+    setIsLoading(true);
+    setErrorMessage(null);
+
+    try {
+      const session = await fetchAuthSession();
+      const accessToken = session.tokens?.accessToken?.toString();
+
+      if (!accessToken) {
+        throw new Error("認証情報を取得できませんでした");
+      }
+
+      // 現在のページ番号を指定して履歴を取得する
+      const response = await fetch(
+        `${env.apiBaseUrl}/api/records?page=${page}`,
+        {
           headers: {
             Authorization: `Bearer ${accessToken}`,
           },
           cache: "no-store",
-        });
+        },
+      );
 
-        if (!response.ok) {
-          throw new Error("分析履歴の取得に失敗しました");
-        }
+      if (!response.ok) {
+        throw new Error("分析履歴の取得に失敗しました");
+      }
 
-        const data: AnalysisRecord[] = await response.json();
+      const data: PaginatedRecordsResponse = await response.json();
 
-        setRecords(data);
-      } catch (error) {
-        console.error("分析履歴の取得に失敗しました:", error);
+      if (!isActive) {
+        return;
+      }
 
-        setErrorMessage(
-          "分析履歴を取得できませんでした。時間をおいて再度お試しください。",
-        );
-      } finally {
+      setRecords(data.records);
+      setPagination(data.pagination);
+    } catch (error) {
+      if (!isActive) {
+        return;
+      }
+
+      console.error("分析履歴の取得に失敗しました:", error);
+
+      setErrorMessage(
+        "分析履歴を取得できませんでした。時間をおいて再度お試しください。",
+      );
+    } finally {
+      if (isActive) {
         setIsLoading(false);
       }
-    };
+    }
+  };
 
-    void fetchRecords();
-  }, []);
+  void fetchRecords();
+
+    return () => {
+      isActive = false;
+    };
+  }, [page]);
 
   return (
     <main className="min-h-full bg-emerald-50 px-4 py-8">
@@ -113,11 +142,43 @@ export default function Home() {
               分析履歴はまだありません。
             </p>
           ) : (
-            // 取得した分析履歴をカード形式で表示する。
-            <div className="space-y-4">
-              {records.map((record) => (
-                <RecordCard key={record.id} record={record} />
-              ))}
+            <div>
+              {/* 分析履歴一覧 */}
+              <div className="space-y-4">
+                {records.map((record) => (
+                  <RecordCard key={record.id} record={record} />
+                ))}
+              </div>
+
+              {/* ページネーション */}
+              {pagination && pagination.totalPages > 1 && (
+                <nav
+                  aria-label="分析履歴のページ切り替え"
+                  className="mt-8 flex items-center justify-center gap-4"
+                >
+                  <button
+                    type="button"
+                    onClick={() => setPage((prev) => prev - 1)}
+                    disabled={page <= 1}
+                    className="rounded-lg bg-emerald-600 px-4 py-2 text-white transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:bg-gray-300"
+                  >
+                    前へ
+                  </button>
+
+                  <span className="text-sm text-gray-700">
+                    {pagination.page} / {pagination.totalPages} ページ
+                  </span>
+
+                  <button
+                    type="button"
+                    onClick={() => setPage((prev) => prev + 1)}
+                    disabled={page >= pagination.totalPages}
+                    className="rounded-lg bg-emerald-600 px-4 py-2 text-white transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:bg-gray-300"
+                  >
+                    次へ
+                  </button>
+                </nav>
+              )}
             </div>
           )}
         </section>
