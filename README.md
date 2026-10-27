@@ -253,7 +253,7 @@ LambdaのErrorsおよびDurationについてCloudWatchアラームを設定し�
 
 ### AWSアーキテクチャ図
 
-![AWSアーキテクチャ図](./docs/images/aws-architecture.png)
+![AWSアーキテクチャ図](./docs/images/aws-architecture.svg)
 
 ---
 
