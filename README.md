@@ -6,10 +6,15 @@ AIを活用して、アサーティブ・コミュニケーションを練習す
 
 分析結果をもとに、自分のコミュニケーションの特徴を振り返り、より適切な自己表現を身につけることを目的としています。
 
+### アプリURL
+
+https://assertion-check.com
+
 > **開発状況**
 >
-> 現在、ローカルMVPの主要機能を実装済みです。
-> AWS本番環境へのデプロイおよび一部UI調整は今後実施予定です。
+> MVPの主要機能を実装し、AWS本番環境へのデプロイを完了しています。
+>
+> 現在はレビューを通じた改善および追加機能の検討を進めています。
 
 ---
 
@@ -59,8 +64,10 @@ AIを活用して、アサーティブ・コミュニケーションを練習す
 | 分析結果の保存 | PostgreSQLへの分析内容・結果の保存 | ✅ |
 | 分析履歴一覧 | 過去の分析履歴を一覧表示 | ✅ |
 | 分析履歴詳細 | 保存済みの分析内容・結果を表示 | ✅ |
+| ページネーション | 分析履歴を複数ページに分けて表示 | ✅ |
 | マイページ | ユーザー情報の表示 | ✅ |
 | アサーションの説明 | アサーションやコミュニケーションタイプを説明 | ✅ |
+| レスポンシブ対応 | スマートフォンなどの画面サイズに応じたレイアウト調整 | ✅ |
 
 ### 3つのコミュニケーションタイプ
 
@@ -105,7 +112,7 @@ AIは、入力された対応を以下の3つの観点から分析します。
 | 技術 | 用途 |
 |---|---|
 | Next.js 16（App Router） | フロントエンドフレームワーク |
-| React | UI構築 |
+| React 19 | UI構築 |
 | TypeScript | 型安全な開発 |
 | Tailwind CSS 4 | スタイリング |
 | AWS Amplify Auth | Cognitoとの認証連携 |
@@ -120,25 +127,27 @@ AIは、入力された対応を以下の3つの観点から分析します。
 | Drizzle ORM | データベース操作 |
 | Drizzle Kit | マイグレーション管理 |
 | AWS SDK for JavaScript v3 | Amazon Bedrockとの連携 |
-| aws-jwt-verify | CognitoのJWT検証 |
+| aws-jwt-verify | ローカル環境でのCognito JWT検証 |
+
+※本番環境では、API GatewayのJWTオーソライザーを使用して認証を行っています。
 
 ### データベース・開発環境
 
 | 技術 | 用途 |
 |---|---|
-| PostgreSQL | ユーザー情報・分析履歴の保存、分析利用回数の管理 |
+| PostgreSQL 17 | ユーザー情報・分析履歴の保存、分析利用回数の管理 |
 | Docker | ローカルDB環境 |
 | Node.js 24 | JavaScript実行環境 |
 | npm | パッケージ管理 |
 | Git / GitHub | ソースコード管理 |
-| GitHub Actions | CI |
+| GitHub Actions | CI/CD（品質チェック・本番環境への自動デプロイ） |
 
 ### AWSサービス
 
 | サービス | 用途 |
 |---|---|
 | AWS Amplify Hosting | Next.jsのホスティング |
-| Amazon API Gateway | フロントエンドからのAPIリクエスト受付 |
+| Amazon API Gateway | APIリクエスト受付・JWT認証 |
 | AWS Lambda | Hono / TypeScriptの実行 |
 | Amazon RDS for PostgreSQL | ユーザー情報・分析履歴の保存、分析利用回数の管理 |
 | Amazon Cognito | ユーザー認証・JWTの発行 |
@@ -157,7 +166,7 @@ AIは、入力された対応を以下の3つの観点から分析します。
 
 ### ローカル開発環境
 
-現在は、フロントエンドとバックエンドをローカルで起動しています。
+ローカル開発環境では、フロントエンドとバックエンドをローカルで起動しています。
 
 データベースにはDocker上のPostgreSQLを使用し、認証と生成AIにはAWSのマネージドサービスを利用しています。
 
@@ -179,32 +188,72 @@ AIは、入力された対応を以下の3つの観点から分析します。
 
 ※実際にはCognitoによる認証をフロントエンドから実行し、バックエンドではJWTを検証します。
 
-### 本番環境（予定）
+### AWS本番環境
 
-本番環境ではAWSを中心とした構成を予定しています。
+AWS東京リージョン（ap-northeast-1）に本番環境を構築しています。
+
+主な構成は以下のとおりです。
 
 | 役割 | AWSサービス |
 |---|---|
 | フロントエンド | AWS Amplify Hosting |
-| API | Amazon API Gateway |
+| API | Amazon API Gateway（HTTP API） |
 | バックエンド | AWS Lambda |
 | データベース | Amazon RDS for PostgreSQL |
 | 生成AI | Amazon Bedrock |
 | 認証 | Amazon Cognito |
+| DNS・ドメイン管理 | Amazon Route 53 |
+| ログ・監視 | Amazon CloudWatch |
 
 ### ネットワーク構成
 
-本番環境では、東京リージョン（ap-northeast-1）にVPCを構築する予定です。
+東京リージョン（ap-northeast-1）にVPCを構築し、LambdaとRDSをプライベートサブネットに配置しています。
 
-LambdaとRDSをプライベートサブネットに配置し、RDSはシングルAZ構成を採用する予定です。
+RDSにはSingle-AZ構成を採用しています。
 
-また、LambdaからBedrockやSecrets Managerへのアクセスには、VPC Endpointを利用する構成を想定しています。
+DBサブネットグループには、AZ 1aとAZ 1cのDB用サブネットを登録しています。
+
+AZ 1cのDB用サブネットはRDSの構成要件を満たすために用意したものであり、待機用RDSは配置していません。
+
+また、LambdaからBedrockやSecrets Managerへのアクセスには、VPC Endpointを利用しています。
+
+NAT Gatewayは設置せず、必要なAWSサービスへのプライベート接続を利用することで、コストを抑える構成としています。
+
+### 認証方式
+
+Amazon Cognitoを使用してユーザー認証を行っています。
+
+JWTの検証方法は、ローカル環境と本番環境で異なります。
+
+| 環境 | JWT検証方法 |
+|---|---|
+| ローカル | Honoのミドルウェア（aws-jwt-verify） |
+| 本番 | API GatewayのJWTオーソライザー |
+
+本番環境では、API GatewayがCognitoのJWTを検証します。
+
+認証済みリクエストのみをLambdaに渡し、LambdaではAPI Gatewayから受け取ったユーザー識別子（`sub`）を使用して処理を行います。
+
+### 監視・コスト管理
+
+AWS本番環境では、CloudWatchによるログ・監視を設定しています。
+
+主な監視項目は以下のとおりです。
+
+| 項目 | 内容 |
+|---|---|
+| Lambda Errors | エラー発生の監視 |
+| Lambda Duration | 実行時間の監視 |
+| CloudWatch Logs | Lambdaのログ管理 |
+| AWS Budgets | AWS利用料金の予算管理 |
+
+LambdaのErrorsおよびDurationについてCloudWatchアラームを設定し、異常を検知できるようにしています。
+
+また、AWS Budgetsを利用して、利用料金の増加を把握できるようにしています。
 
 ### AWSアーキテクチャ図
 
-<!-- 作成済みのAWSアーキテクチャ図を挿入 -->
-
-![AWSアーキテクチャ図](./docs/images/aws-architecture.png)
+![AWSアーキテクチャ図](./docs/images/aws-architecture.svg)
 
 ---
 
@@ -214,9 +263,9 @@ LambdaとRDSをプライベートサブネットに配置し、RDSはシング�
 
 Drizzle ORMを使用してテーブル定義とデータベース操作を管理しています。
 
-### ER図
+ローカル環境ではDocker上のPostgreSQLを使用し、本番環境ではAmazon RDS for PostgreSQLを利用しています。
 
-<!-- 作成済みのER図を挿入 -->
+### ER図
 
 ![ER図](./docs/images/er-diagram.png)
 
@@ -320,7 +369,7 @@ analysis_results
 
 また、1人のユーザーは複数のAI分析利用履歴を持ちます。
 
-analysis_usageでは、AI分析のリクエストごとにレコードを作成し、created_atをもとに日本時間（JST）で当日の利用回数を集計します。
+`analysis_usage`では、AI分析のリクエストごとにレコードを作成し、created_atをもとに日本時間（JST）で当日の利用回数を集計します。
 
 ---
 
@@ -333,7 +382,8 @@ Assertion_Check/
 │
 ├── .github/
 │   └── workflows/
-│       └── ci.yml             # GitHub Actions
+│       ├── ci.yml             # CI
+│       └── deploy.yml         # CD
 │
 ├── frontend/                  # Next.js
 │   └── src/
@@ -360,6 +410,8 @@ Assertion_Check/
 ├── .gitignore
 └── README.md
 ```
+
+※ディレクトリ構成は主要なファイル・ディレクトリのみ記載しています。
 
 ---
 
@@ -390,7 +442,8 @@ cd Assertion_Check
 ### 7-3. Node.jsのバージョン設定
 
 本プロジェクトでは、Node.js 24.22.1を使用しています。
-セキュリティ修正が適用されたNode.jsを使用するため、.nvmrcでバージョンを指定しています。
+
+セキュリティ修正が適用されたNode.jsを使用するため、`.nvmrc`でバージョンを指定しています。
 
 nvmを利用している場合、プロジェクトのルートディレクトリで以下を実行してください。
 
@@ -399,15 +452,17 @@ nvm install
 nvm use
 ```
 
-.nvmrcに記載されたNode.jsのバージョンが使用されます。
+`.nvmrc`に記載されたNode.jsのバージョンが使用されます。
 
-バージョンの確認：
+**バージョンの確認**
+
 ```bash
 node -v
 ```
 
 以下が表示されれば正常です。
-```bash
+
+```text
 v24.22.1
 ```
 
@@ -616,17 +671,13 @@ http://localhost:3000
 | `npm run dev` | 開発サーバー起動（ホットリロード） |
 | `npm run lint` | ESLintによるコードチェック |
 | `npm run type-check` | TypeScriptの型チェック |
-| `npm run build` | Lambda用にバンドル（`dist/lambda.mjs`、ハンドラー名 `handler`） |
+| `npm run build` | Lambda用にバンドル |
 
-### 7-11. CI（継続的インテグレーション）
+### 7-11. CI/CD（継続的インテグレーション・継続的デリバリー）
 
-GitHub Actionsを使用して、コードの品質チェックを自動化しています。
+GitHub Actionsを使用して、コードの品質チェックと本番環境へのデプロイを自動化しています。
 
-設定ファイル：
-
-```text
-.github/workflows/ci.yml
-```
+#### CI
 
 `main` ブランチへのpushおよびPull Request時に、フロントエンド・バックエンドそれぞれで以下を実行します。
 
@@ -644,13 +695,30 @@ build
 
 ※ CIではAWSサービスへの実接続を行わず、ビルドに必要な環境変数にはダミー値を使用しています。
 
+#### CD
+
+CIが成功した後、GitHub ActionsからAWS本番環境へのデプロイを実行します。
+
+主な処理は以下のとおりです。
+
+1. GitHub ActionsのCIが成功
+2. GitHub Actions OIDCを使用してAWSのIAMロールを引き受ける
+3. AWS Lambdaのコードを更新
+4. AWS Amplify Hostingのデプロイジョブを開始
+
+これにより、`main` ブランチへの変更を本番環境へ反映できるようにしています。
+
+AWSへの認証にはOIDCを利用し、GitHub Actionsに長期有効なAWSアクセスキーを保存しない構成としています。
+
 ---
 
 ## 8. 開発状況・今後の予定
 
 ### 現在の開発状況
 
-ローカルMVPの主要機能を実装済みです。
+MVPの主要機能およびAWS本番環境の構築・デプロイを完了しています。
+
+#### MVP機能
 
 - [x] 開発環境の構築
 - [x] Amazon Bedrockとの連携
@@ -660,18 +728,35 @@ build
 - [x] Cognitoによるユーザー認証
 - [x] PostgreSQLへのデータ保存
 - [x] 分析履歴一覧・詳細
+- [x] 分析履歴のページネーション
 - [x] マイページ
 - [x] アサーションの説明機能
 - [x] 分析結果画面の統合
 - [x] ユーザーごとの分析回数制限（1日10回）
 - [x] 本日の残り分析可能回数の表示
+- [x] レスポンシブ対応
+
+#### AWS本番環境
+
+- [x] AWS初期設定・コスト管理
+- [x] VPC・ネットワーク構築
+- [x] RDS PostgreSQL構築
+- [x] Amazon Bedrock設定
+- [x] Amazon Cognito本番環境構築
+- [x] AWS Lambda・API Gateway構築
+- [x] AWS Amplify Hosting構築
+- [x] Amazon Route 53による独自ドメイン設定
+- [x] Amazon CloudWatchによる監視設定
+- [x] GitHub ActionsによるCI/CD構築
+- [x] AWS本番環境へのデプロイ
 
 ### 今後の予定
 
-- [ ] UI設計書に合わせたレイアウト調整
-- [ ] AWS本番環境の構築
-- [ ] 本番環境へのデプロイ
+- [ ] レビュー結果を踏まえた改善
+- [ ] UI・UXの改善
+- [ ] 分析結果の可視化
 - [ ] 追加機能の検討・実装
+- [ ] 利用規約・プライバシーポリシーの整備
 
 ---
 
