@@ -34,12 +34,12 @@ export function RecordCard({ record, page }: RecordCardProps) {
         </time>
 
         {/* 困った場面 */}
-        <p className="mt-3 line-clamp-2 font-medium text-gray-800">
+        <p className="mt-3 line-clamp-2 break-words font-medium text-gray-800">
           {record.situation}
         </p>
 
         {/* アサーティブ度 */}
-        <div className="mt-4 flex items-center justify-between">
+        <div className="mt-4 flex flex-wrap items-center justify-between gap-2">
           <span className="text-sm font-semibold text-emerald-700">
             アサーティブ度 {record.assertiveScore}%
           </span>

@@ -14,7 +14,7 @@ export default function BottomNavigation() {
   ];
 
   return (
-    <nav className="border-t border-emerald-100 bg-white">
+    <nav className="border-t border-emerald-100 bg-white pb-[env(safe-area-inset-bottom)]">
       <div className="mx-auto flex max-w-2xl justify-around">
         {navigationItems.map((item) => {
           // 現在のURLと一致するメニューを選択状態にする。

@@ -54,16 +54,16 @@ export default function MyPage() {
     : "";
 
   return (
-    <main className="min-h-screen bg-emerald-50">
+    <main className="min-h-full bg-emerald-50">
       <div className="mx-auto max-w-2xl">
        {/* ページタイトル */}
-        <header className="px-6 pt-10 pb-6">
+        <header className="px-4 pt-8 pb-2 sm:px-6 sm:pt-10">
           <h1 className="text-2xl font-bold text-emerald-900">
             マイページ
           </h1>
         </header>
 
-        <div className="px-6 py-8">
+        <div className="px-4 py-6 sm:px-6 sm:py-8">
           {/* ローディング */}
           {isLoading && (
             <p className="text-gray-600">
@@ -81,7 +81,7 @@ export default function MyPage() {
           {/* ユーザー情報 */}
           {!isLoading && !errorMessage && user && (
             <div className="space-y-8">
-              <section className="flex items-center gap-4 rounded-xl border border-emerald-100 bg-white p-6 shadow-sm">
+              <section className="flex items-center gap-4 rounded-xl border border-emerald-100 bg-white p-5 shadow-sm sm:p-6">
                 {/* ユーザーアイコン */}
                 <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-emerald-100">
                   <svg
@@ -104,7 +104,7 @@ export default function MyPage() {
 
                 {/* ユーザー情報 */}
                 <div className="min-w-0">
-                  <p className="font-bold text-gray-800">
+                  <p className="break-words font-bold text-gray-800">
                     {user.username}
                   </p>
 
@@ -121,7 +121,7 @@ export default function MyPage() {
               {/* アサーション説明画面へのリンク */}
               <Link
                 href="/assertion-guide"
-                className="flex items-center justify-between rounded-xl border border-emerald-100 bg-white p-6 shadow-sm transition-colors hover:border-emerald-200 hover:bg-emerald-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-700"
+                className="flex items-center justify-between rounded-xl border border-emerald-100 bg-white p-5 shadow-sm transition-colors sm:p-6 hover:border-emerald-200 hover:bg-emerald-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-700"
               >
                 <span className="text-sm font-medium text-gray-800">
                   アサーションとは

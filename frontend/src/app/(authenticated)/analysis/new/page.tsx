@@ -163,12 +163,12 @@ export default function NewAnalysisPage() {
   };
 
   return (
-      <main className="min-h-screen bg-emerald-50 px-4 py-12">
+      <main className="min-h-full bg-emerald-50 px-4 py-8">
         <div className="mx-auto max-w-2xl">
 
           {/* 新規作成画面の見出し */}
           <header className="mb-8 text-center">
-            <h1 className="text-3xl font-bold text-emerald-800">
+            <h1 className="text-2xl font-bold text-emerald-800 sm:text-3xl">
               アサーションCheck
             </h1>
 

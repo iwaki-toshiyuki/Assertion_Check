@@ -38,13 +38,13 @@ export default function LogoutButton() {
   };
 
   return (
-    <div>
+    <div className="shrink-0">
       {/* ログアウトボタン */}
       <button
         type="button"
         onClick={handleLogout}
         disabled={isLoading}
-        className="rounded bg-gray-700 px-4 py-2 font-semibold text-white disabled:opacity-50"
+        className="whitespace-nowrap rounded bg-gray-700 px-3 py-1.5 text-sm font-semibold text-white disabled:opacity-50 sm:px-4 sm:py-2 sm:text-base"
       >
         {isLoading ? "ログアウト中..." : "ログアウト"}
       </button>
