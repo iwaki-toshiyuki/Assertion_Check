@@ -2,9 +2,9 @@
 export default function AssertionGuidePage() {
   return (
     <main className="min-h-full bg-emerald-50">
-      <div className="mx-auto max-w-2xl px-6 pb-12">
+      <div className="mx-auto max-w-2xl px-4 pb-12 sm:px-6">
         {/* ページタイトル */}
-        <header className="pt-10 pb-6">
+        <header className="pt-8 pb-6 sm:pt-10">
           <h1 className="text-2xl font-bold text-emerald-900">
             アサーションとは
           </h1>
@@ -15,7 +15,7 @@ export default function AssertionGuidePage() {
 
         <div className="space-y-6">
           {/* アサーションの概要 */}
-          <section className="rounded-xl border border-emerald-100 bg-white p-6 shadow-sm">
+          <section className="rounded-xl border border-emerald-100 bg-white p-5 shadow-sm sm:p-6">
             <h2 className="text-lg font-bold text-emerald-900">
               アサーションとは？
             </h2>
@@ -39,7 +39,7 @@ export default function AssertionGuidePage() {
 
             <div className="space-y-4">
               {/* アサーティブ */}
-              <article className="rounded-xl border border-emerald-100 bg-white p-6 shadow-sm">
+              <article className="rounded-xl border border-emerald-100 bg-white p-5 shadow-sm sm:p-6">
                 <h3 className="font-bold text-emerald-700">
                   ① アサーティブ
                 </h3>
@@ -55,7 +55,7 @@ export default function AssertionGuidePage() {
               </article>
 
               {/* アグレッシブ */}
-              <article className="rounded-xl border border-emerald-100 bg-white p-6 shadow-sm">
+              <article className="rounded-xl border border-emerald-100 bg-white p-5 shadow-sm sm:p-6">
                 <h3 className="font-bold text-orange-600">
                   ② アグレッシブ
                 </h3>
@@ -71,7 +71,7 @@ export default function AssertionGuidePage() {
               </article>
 
               {/* ノンアサーティブ */}
-              <article className="rounded-xl border border-emerald-100 bg-white p-6 shadow-sm">
+              <article className="rounded-xl border border-emerald-100 bg-white p-5 shadow-sm sm:p-6">
                 <h3 className="font-bold text-blue-600">
                   ③ ノンアサーティブ
                 </h3>
@@ -89,7 +89,7 @@ export default function AssertionGuidePage() {
           </section>
 
           {/* 具体例 */}
-          <section className="rounded-xl border border-emerald-100 bg-white p-6 shadow-sm">
+          <section className="rounded-xl border border-emerald-100 bg-white p-5 shadow-sm sm:p-6">
             <h2 className="text-lg font-bold text-emerald-900">
               具体例で比較してみよう
             </h2>
@@ -134,7 +134,7 @@ export default function AssertionGuidePage() {
           </section>
 
           {/* まとめ */}
-          <section className="rounded-xl border border-emerald-100 bg-white p-6 shadow-sm">
+          <section className="rounded-xl border border-emerald-100 bg-white p-5 shadow-sm sm:p-6">
             <h2 className="text-lg font-bold text-emerald-900">
               アサーションを身につけるために
             </h2>

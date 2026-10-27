@@ -102,7 +102,7 @@ const fromPage =
       <div className="mx-auto max-w-2xl">
         {/* 画面タイトル */}
         <header className="mb-8 text-center">
-          <h1 className="text-3xl font-bold text-emerald-800">
+          <h1 className="text-2xl font-bold text-emerald-800 sm:text-3xl">
             分析履歴の詳細
           </h1>
 
@@ -117,20 +117,20 @@ const fromPage =
         </div>
 
         {isLoading ? (
-          <p className="rounded-2xl bg-white p-8 text-center text-gray-600">
+          <p className="rounded-2xl bg-white p-5 text-center sm:p-8 text-gray-600">
             分析履歴を読み込んでいます...
           </p>
         ) : errorMessage ? (
           <p
             role="alert"
-            className="rounded-2xl bg-white p-8 text-center text-red-600"
+            className="rounded-2xl bg-white p-5 text-center sm:p-8 text-red-600"
           >
             {errorMessage}
           </p>
         ) : record && analysisResult ? (
           <>
             {/* 保存済みの入力内容 */}
-            <section className="rounded-2xl bg-white p-8 shadow-sm">
+            <section className="rounded-2xl bg-white p-5 shadow-sm sm:p-8">
               <h2 className="mb-4 text-xl font-bold text-gray-800">
                 分析内容
               </h2>
@@ -138,14 +138,14 @@ const fromPage =
               <h3 className="font-semibold text-gray-800">
                 困った場面
               </h3>
-              <p className="mt-2 whitespace-pre-wrap text-gray-600">
+              <p className="mt-2 whitespace-pre-wrap break-words text-gray-600">
                 {record.situation}
               </p>
 
               <h3 className="mt-6 font-semibold text-gray-800">
                 取った対応
               </h3>
-              <p className="mt-2 whitespace-pre-wrap text-gray-600">
+              <p className="mt-2 whitespace-pre-wrap break-words text-gray-600">
                 {record.response}
               </p>
             </section>
@@ -154,7 +154,7 @@ const fromPage =
             <AnalysisResult result={analysisResult} />
           </>
         ) : (
-          <p className="rounded-2xl bg-white p-8 text-center text-gray-600">
+          <p className="rounded-2xl bg-white p-5 text-center sm:p-8 text-gray-600">
             表示できる分析履歴がありません。
           </p>
         )}

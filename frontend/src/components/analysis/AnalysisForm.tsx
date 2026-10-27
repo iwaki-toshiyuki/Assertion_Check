@@ -26,7 +26,7 @@ export function AnalysisForm({
   onAnalyze,
 }: AnalysisFormProps) {
   return (
-    <section className="rounded-2xl bg-white p-8 shadow-sm">
+    <section className="rounded-2xl bg-white p-5 shadow-sm sm:p-8">
       <div className="space-y-6">
         {/* 本日の分析可能回数を表示する */}
         <div

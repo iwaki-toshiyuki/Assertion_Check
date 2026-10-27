@@ -151,7 +151,7 @@ export default function Home() {
       <div className="mx-auto max-w-2xl">
         {/* 画面タイトル */}
         <header className="mb-8 text-center">
-          <h1 className="text-3xl font-bold text-emerald-800">
+          <h1 className="text-2xl font-bold text-emerald-800 sm:text-3xl">
             アサーションCheck
           </h1>
 

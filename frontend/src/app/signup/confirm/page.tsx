@@ -11,7 +11,7 @@ export default function ConfirmSignUpPage() {
       description="登録したメールアドレスに届いた確認コードを入力してください。"
       footer={
         // 新規登録画面・ログイン画面へ戻るリンク
-        <div className="flex justify-center gap-6">
+        <div className="flex flex-wrap justify-center gap-x-6 gap-y-2">
           <Link
             href="/signup"
             className="font-semibold text-emerald-700 hover:underline"
