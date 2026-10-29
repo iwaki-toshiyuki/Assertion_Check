@@ -56,10 +56,10 @@ export function AnalysisForm({
             value={situation}
             onChange={(event) => onSituationChange(event.target.value)}
             placeholder="例：上司から急な仕事を頼まれ、断りづらかった"
-            className="w-full resize-none rounded-lg border border-gray-300 p-3 text-gray-900 outline-none focus:border-emerald-500"
+            className="w-full resize-none rounded-lg border border-gray-300 p-3 text-gray-900 outline-none placeholder:text-gray-500 focus:border-emerald-500"
           />
 
-          <p className="mt-1 text-right text-sm text-gray-500">
+          <p className="mt-1 text-right text-sm text-gray-700">
             {situation.length} / 500
           </p>
         </div>
@@ -80,10 +80,10 @@ export function AnalysisForm({
             value={response}
             onChange={(event) => onResponseChange(event.target.value)}
             placeholder="例：断れず、そのまま仕事を引き受けた"
-            className="w-full resize-none rounded-lg border border-gray-300 p-3 text-gray-900 outline-none focus:border-emerald-500"
+            className="w-full resize-none rounded-lg border border-gray-300 p-3 text-gray-900 outline-none placeholder:text-gray-500 focus:border-emerald-500"
           />
 
-          <p className="mt-1 text-right text-sm text-gray-500">
+          <p className="mt-1 text-right text-sm text-gray-700">
             {response.length} / 500
           </p>
         </div>
@@ -98,7 +98,7 @@ export function AnalysisForm({
         </button>
 
         {errorMessage && (
-          <p role="alert" className="text-sm text-red-600">
+          <p role="alert" className="text-sm text-red-700">
             {errorMessage}
           </p>
         )}

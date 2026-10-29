@@ -172,7 +172,7 @@ export default function NewAnalysisPage() {
               アサーションCheck
             </h1>
 
-            <p className="mt-3 text-gray-600">
+            <p className="mt-3 text-gray-800">
               コミュニケーションで困った場面を振り返ってみましょう。
             </p>
           </header>

@@ -28,7 +28,7 @@ export default function AuthPageLayout({
           <h1 className="text-xl font-bold text-emerald-900">{title}</h1>
 
           {description && (
-            <p className="mt-2 text-sm text-gray-600">{description}</p>
+            <p className="mt-2 text-sm text-gray-800">{description}</p>
           )}
         </header>
 
@@ -39,7 +39,7 @@ export default function AuthPageLayout({
 
         {/* 他の認証画面へのリンク */}
         {footer && (
-          <div className="mt-6 text-center text-sm text-gray-600">{footer}</div>
+          <div className="mt-6 text-center text-sm text-gray-800">{footer}</div>
         )}
       </div>
     </main>

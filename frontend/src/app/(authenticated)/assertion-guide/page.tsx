@@ -8,7 +8,7 @@ export default function AssertionGuidePage() {
           <h1 className="text-2xl font-bold text-emerald-900">
             アサーションとは
           </h1>
-          <p className="mt-2 text-sm text-gray-600">
+          <p className="mt-2 text-sm text-gray-800">
             自分も相手も大切にするコミュニケーション
           </p>
         </header>
@@ -20,12 +20,12 @@ export default function AssertionGuidePage() {
               アサーションとは？
             </h2>
 
-            <p className="mt-4 text-sm leading-7 text-gray-700">
+            <p className="mt-4 text-sm leading-7 text-gray-800">
               アサーションとは、自分の気持ちや考えを大切にしながら、
               相手の気持ちや考えも尊重して伝えるコミュニケーションの考え方です。
             </p>
 
-            <p className="mt-3 text-sm leading-7 text-gray-700">
+            <p className="mt-3 text-sm leading-7 text-gray-800">
               自分の意見を我慢することでも、相手に一方的に押し付けることでもありません。
               お互いを尊重しながら、自分の考えを適切に伝えることを目指します。
             </p>
@@ -48,7 +48,7 @@ export default function AssertionGuidePage() {
                   自分も相手も尊重するタイプ
                 </p>
 
-                <p className="mt-3 text-sm leading-7 text-gray-600">
+                <p className="mt-3 text-sm leading-7 text-gray-800">
                   自分の気持ちや意見を率直に伝えながら、
                   相手の立場や考えにも配慮するコミュニケーションです。
                 </p>
@@ -56,7 +56,7 @@ export default function AssertionGuidePage() {
 
               {/* アグレッシブ */}
               <article className="rounded-xl border border-emerald-100 bg-white p-5 shadow-sm sm:p-6">
-                <h3 className="font-bold text-orange-600">
+                <h3 className="font-bold text-orange-700">
                   ② アグレッシブ
                 </h3>
 
@@ -64,7 +64,7 @@ export default function AssertionGuidePage() {
                   自分の主張を優先するタイプ
                 </p>
 
-                <p className="mt-3 text-sm leading-7 text-gray-600">
+                <p className="mt-3 text-sm leading-7 text-gray-800">
                   自分の意見や要求を強く押し出し、
                   相手の気持ちや立場への配慮が不足しやすいコミュニケーションです。
                 </p>
@@ -72,7 +72,7 @@ export default function AssertionGuidePage() {
 
               {/* ノンアサーティブ */}
               <article className="rounded-xl border border-emerald-100 bg-white p-5 shadow-sm sm:p-6">
-                <h3 className="font-bold text-blue-600">
+                <h3 className="font-bold text-blue-700">
                   ③ ノンアサーティブ
                 </h3>
 
@@ -80,7 +80,7 @@ export default function AssertionGuidePage() {
                   自分の気持ちを抑えやすいタイプ
                 </p>
 
-                <p className="mt-3 text-sm leading-7 text-gray-600">
+                <p className="mt-3 text-sm leading-7 text-gray-800">
                   相手の意見や要求を優先し、
                   自分の気持ちや考えを十分に伝えられないコミュニケーションです。
                 </p>
@@ -94,7 +94,7 @@ export default function AssertionGuidePage() {
               具体例で比較してみよう
             </h2>
 
-            <p className="mt-4 text-sm leading-7 text-gray-700">
+            <p className="mt-4 text-sm leading-7 text-gray-800">
               例えば、上司から急な仕事を頼まれたものの、
               すでに別の仕事で手がいっぱいだった場合を考えてみましょう。
             </p>
@@ -104,7 +104,7 @@ export default function AssertionGuidePage() {
                 <h3 className="text-sm font-bold text-emerald-700">
                   アサーティブ
                 </h3>
-                <p className="mt-2 rounded-lg bg-emerald-50 p-4 text-sm leading-7 text-gray-700">
+                <p className="mt-2 rounded-lg bg-emerald-50 p-4 text-sm leading-7 text-gray-800">
                   「今は別の業務を進めているため、
                   すぐに対応するのは難しい状況です。
                   どちらを優先すべきか相談させていただけますか？」
@@ -112,20 +112,20 @@ export default function AssertionGuidePage() {
               </div>
 
               <div>
-                <h3 className="text-sm font-bold text-orange-600">
+                <h3 className="text-sm font-bold text-orange-700">
                   アグレッシブ
                 </h3>
-                <p className="mt-2 rounded-lg bg-orange-50 p-4 text-sm leading-7 text-gray-700">
+                <p className="mt-2 rounded-lg bg-orange-50 p-4 text-sm leading-7 text-gray-800">
                   「今忙しいんですけど！
                   そんな仕事まで押し付けないでください！」
                 </p>
               </div>
 
               <div>
-                <h3 className="text-sm font-bold text-blue-600">
+                <h3 className="text-sm font-bold text-blue-700">
                   ノンアサーティブ
                 </h3>
-                <p className="mt-2 rounded-lg bg-blue-50 p-4 text-sm leading-7 text-gray-700">
+                <p className="mt-2 rounded-lg bg-blue-50 p-4 text-sm leading-7 text-gray-800">
                   「はい、わかりました……。」
                   （本当は余裕がないものの、断れずに引き受ける）
                 </p>
@@ -139,13 +139,13 @@ export default function AssertionGuidePage() {
               アサーションを身につけるために
             </h2>
 
-            <p className="mt-4 text-sm leading-7 text-gray-700">
+            <p className="mt-4 text-sm leading-7 text-gray-800">
               アサーティブな伝え方は、最初から上手にできる必要はありません。
               日々のコミュニケーションを振り返り、
               少しずつ練習していくことが大切です。
             </p>
 
-            <p className="mt-3 text-sm leading-7 text-gray-700">
+            <p className="mt-3 text-sm leading-7 text-gray-800">
               アサーションCheckでは、実際に困った場面と自分の対応を入力することで、
               コミュニケーションの傾向を振り返り、
               よりアサーティブな伝え方を考えることができます。

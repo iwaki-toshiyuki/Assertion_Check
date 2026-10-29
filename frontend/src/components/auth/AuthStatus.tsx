@@ -50,7 +50,7 @@ export default function AuthStatus() {
 
   // 認証状態の取得に失敗した場合
   if (error) {
-    return <p role="alert" className="text-red-600">{error}</p>;
+    return <p role="alert" className="text-red-700">{error}</p>;
   }
 
   // ログイン中はログアウトボタンを表示する

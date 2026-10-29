@@ -155,7 +155,7 @@ export default function Home() {
             アサーションCheck
           </h1>
 
-          <p className="mt-3 text-gray-600">
+          <p className="mt-3 text-gray-800">
             これまでの分析結果を振り返りましょう。
           </p>
         </header>
@@ -183,20 +183,20 @@ export default function Home() {
 
           {isLoading ? (
             // データ取得中
-            <p className="rounded-xl bg-white p-6 text-center text-gray-600">
+            <p className="rounded-xl bg-white p-6 text-center text-gray-800">
               分析履歴を読み込んでいます...
             </p>
           ) : errorMessage ? (
             // データ取得失敗
             <p
               role="alert"
-              className="rounded-xl bg-white p-6 text-center text-red-600"
+              className="rounded-xl bg-white p-6 text-center text-red-700"
             >
               {errorMessage}
             </p>
           ) : records.length === 0 ? (
             // 分析履歴が存在しない場合
-            <p className="rounded-xl bg-white p-6 text-center text-gray-600">
+            <p className="rounded-xl bg-white p-6 text-center text-gray-800">
               分析履歴はまだありません。
             </p>
           ) : (

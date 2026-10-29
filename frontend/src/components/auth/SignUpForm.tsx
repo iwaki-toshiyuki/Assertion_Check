@@ -75,7 +75,7 @@ export default function SignUpForm() {
           onChange={(event) => setUsername(event.target.value)}
           className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2.5 text-gray-900 outline-none transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100"
         />
-        <p className="mt-1 text-xs text-gray-500">
+        <p className="mt-1 text-xs text-gray-700">
           20文字以内で入力してください。
         </p>
       </div>
@@ -116,7 +116,7 @@ export default function SignUpForm() {
           onChange={(event) => setPassword(event.target.value)}
           className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2.5 text-gray-900 outline-none transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100"
         />
-        <p className="mt-1 text-xs text-gray-500">
+        <p className="mt-1 text-xs text-gray-700">
           8文字以上で、大文字・小文字・数字・記号を含めてください。
         </p>
       </div>
@@ -125,7 +125,7 @@ export default function SignUpForm() {
       {error && (
         <p
           role="alert"
-          className="rounded-lg border border-red-100 bg-red-50 px-3 py-2 text-sm text-red-600"
+          className="rounded-lg border border-red-100 bg-red-50 px-3 py-2 text-sm text-red-700"
         >
           {error}
         </p>

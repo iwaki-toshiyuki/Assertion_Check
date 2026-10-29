@@ -96,7 +96,7 @@ export default function ConfirmSignUpForm() {
           type="email"
           value={email}
           readOnly
-          className="w-full rounded-lg border border-gray-200 bg-gray-100 px-3 py-2.5 text-gray-600 outline-none"
+          className="w-full rounded-lg border border-gray-200 bg-gray-100 px-3 py-2.5 text-gray-800 outline-none"
         />
       </div>
 
@@ -124,7 +124,7 @@ export default function ConfirmSignUpForm() {
       {error && (
         <p
           role="alert"
-          className="rounded-lg border border-red-100 bg-red-50 px-3 py-2 text-sm text-red-600"
+          className="rounded-lg border border-red-100 bg-red-50 px-3 py-2 text-sm text-red-700"
         >
           {error}
         </p>
