@@ -28,7 +28,7 @@ export default function BottomNavigation() {
               className={`flex-1 py-4 text-center text-sm font-medium ${
                 isActive
                   ? "text-emerald-700"
-                  : "text-gray-500 hover:text-emerald-600"
+                  : "text-gray-700 hover:text-emerald-600"
               }`}
             >
               {item.label}

@@ -106,7 +106,7 @@ const fromPage =
             分析履歴の詳細
           </h1>
 
-          <p className="mt-3 text-gray-600">
+          <p className="mt-3 text-gray-800">
             過去のコミュニケーションを振り返りましょう。
           </p>
         </header>
@@ -117,13 +117,13 @@ const fromPage =
         </div>
 
         {isLoading ? (
-          <p className="rounded-2xl bg-white p-5 text-center sm:p-8 text-gray-600">
+          <p className="rounded-2xl bg-white p-5 text-center sm:p-8 text-gray-800">
             分析履歴を読み込んでいます...
           </p>
         ) : errorMessage ? (
           <p
             role="alert"
-            className="rounded-2xl bg-white p-5 text-center sm:p-8 text-red-600"
+            className="rounded-2xl bg-white p-5 text-center sm:p-8 text-red-700"
           >
             {errorMessage}
           </p>
@@ -138,14 +138,14 @@ const fromPage =
               <h3 className="font-semibold text-gray-800">
                 困った場面
               </h3>
-              <p className="mt-2 whitespace-pre-wrap break-words text-gray-600">
+              <p className="mt-2 whitespace-pre-wrap break-words text-gray-800">
                 {record.situation}
               </p>
 
               <h3 className="mt-6 font-semibold text-gray-800">
                 取った対応
               </h3>
-              <p className="mt-2 whitespace-pre-wrap break-words text-gray-600">
+              <p className="mt-2 whitespace-pre-wrap break-words text-gray-800">
                 {record.response}
               </p>
             </section>
@@ -154,7 +154,7 @@ const fromPage =
             <AnalysisResult result={analysisResult} />
           </>
         ) : (
-          <p className="rounded-2xl bg-white p-5 text-center sm:p-8 text-gray-600">
+          <p className="rounded-2xl bg-white p-5 text-center sm:p-8 text-gray-800">
             表示できる分析履歴がありません。
           </p>
         )}

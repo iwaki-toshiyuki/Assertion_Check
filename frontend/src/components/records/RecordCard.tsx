@@ -28,7 +28,7 @@ export function RecordCard({ record, page }: RecordCardProps) {
         {/* 分析日時 */}
         <time
           dateTime={record.createdAt}
-          className="text-sm text-gray-500"
+          className="text-sm text-gray-700"
         >
           {formattedDate}
         </time>
@@ -44,7 +44,7 @@ export function RecordCard({ record, page }: RecordCardProps) {
             アサーティブ度 {record.assertiveScore}%
           </span>
 
-          <span className="text-sm text-gray-500">
+          <span className="text-sm text-gray-700">
             詳細を見る →
           </span>
         </div>

@@ -153,24 +153,24 @@ export default function LoginForm() {
 
   // 初回の認証状態確認中
   if (authStatus === "checking") {
-    return <p>ログイン状態を確認しています...</p>;
+    return <p className="text-gray-800">ログイン状態を確認しています...</p>;
   }
 
   // DB連携中
   if (authStatus === "syncing") {
-    return <p>ユーザー情報を確認しています...</p>;
+    return <p className="text-gray-800">ユーザー情報を確認しています...</p>;
   }
 
   // 画面遷移中
   if (authStatus === "redirecting") {
-    return <p>画面を移動しています...</p>;
+    return <p className="text-gray-800">画面を移動しています...</p>;
   }
 
   // DB連携失敗時は再試行ボタンを表示する
   if (authStatus === "syncError") {
     return (
       <div className="space-y-4">
-        <p role="alert" className="text-red-600">
+        <p role="alert" className="text-red-700">
           {error}
         </p>
 
@@ -188,7 +188,7 @@ export default function LoginForm() {
   // 認証状態の確認自体に失敗した場合
   if (authStatus === "authError") {
     return (
-      <p role="alert" className="text-red-600">
+      <p role="alert" className="text-red-700">
         {error}
       </p>
     );
@@ -238,7 +238,7 @@ export default function LoginForm() {
       {error && (
         <p
           role="alert"
-          className="rounded-lg border border-red-100 bg-red-50 px-3 py-2 text-sm text-red-600"
+          className="rounded-lg border border-red-100 bg-red-50 px-3 py-2 text-sm text-red-700"
         >
           {error}
         </p>

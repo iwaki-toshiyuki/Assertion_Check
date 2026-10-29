@@ -29,7 +29,7 @@ export default function ConfirmSignUpPage() {
     >
       {/* URLのクエリパラメータ取得が完了するまで待機する */}
       <Suspense
-        fallback={<p className="text-center text-gray-600">読み込み中...</p>}
+        fallback={<p className="text-center text-gray-800">読み込み中...</p>}
       >
         <ConfirmSignUpForm />
       </Suspense>

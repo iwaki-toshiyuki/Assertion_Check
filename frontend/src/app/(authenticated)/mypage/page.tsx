@@ -66,14 +66,14 @@ export default function MyPage() {
         <div className="px-4 py-6 sm:px-6 sm:py-8">
           {/* ローディング */}
           {isLoading && (
-            <p className="text-gray-600">
+            <p className="text-gray-800">
               ユーザー情報を取得しています...
             </p>
           )}
 
           {/* エラー */}
           {errorMessage && (
-            <p role="alert" className="text-red-600">
+            <p role="alert" className="text-red-700">
               {errorMessage}
             </p>
           )}
@@ -108,11 +108,11 @@ export default function MyPage() {
                     {user.username}
                   </p>
 
-                  <p className="break-all text-sm text-gray-600">
+                  <p className="break-all text-sm text-gray-800">
                     {email ?? "メールアドレス未設定"}
                   </p>
 
-                  <p className="mt-1 text-xs text-gray-500">
+                  <p className="mt-1 text-xs text-gray-700">
                     登録日：{formattedCreatedAt}
                   </p>
                 </div>
