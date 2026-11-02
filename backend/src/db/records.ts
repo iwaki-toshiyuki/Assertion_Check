@@ -88,3 +88,51 @@ export async function countRecordsByUserId(userId: number) {
 
   return result.total;
 }
+
+// 本人の履歴と分析結果を、まとめて物理削除する。
+export async function deleteRecordByIdAndUserId(
+  recordId: number,
+  userId: number,
+) {
+  const db = await getDb();
+
+  return db.transaction(async (tx) => {
+    // 所有者を確認し、削除完了まで対象の履歴をロックする。
+    const [record] = await tx
+      .select({ id: records.id })
+      .from(records)
+      .where(
+        and(
+          eq(records.id, recordId),
+          eq(records.userId, userId),
+        ),
+      )
+      .for("update");
+
+    if (!record) {
+      return false;
+    }
+
+    // 外部キー制約があるため、分析結果を先に削除する。
+    await tx
+      .delete(analysisResults)
+      .where(eq(analysisResults.recordId, record.id));
+
+    const [deletedRecord] = await tx
+      .delete(records)
+      .where(
+        and(
+          eq(records.id, record.id),
+          eq(records.userId, userId),
+        ),
+      )
+      .returning({ id: records.id });
+
+    // 想定外の失敗時は例外にし、分析結果の削除も取り消す。
+    if (!deletedRecord) {
+      throw new Error("分析履歴の削除に失敗しました");
+    }
+
+    return true;
+  });
+}
