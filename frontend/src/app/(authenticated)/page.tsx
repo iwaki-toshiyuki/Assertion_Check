@@ -104,6 +104,19 @@ export default function Home() {
           return;
         }
 
+        // 削除などでページ数が減った場合は、最後の有効なページへ移動する。
+        // 履歴が0件の場合は1ページ目として扱う。
+        const lastPage = Math.max(1, data.pagination.totalPages);
+
+        if (page > lastPage) {
+          const url = new URL(window.location.href);
+          url.searchParams.set("page", String(lastPage));
+
+          window.history.replaceState(null, "", url);
+          setPage(lastPage);
+          return;
+        }
+
         setRecords(data.records);
         setPagination(data.pagination);
       } catch (error) {

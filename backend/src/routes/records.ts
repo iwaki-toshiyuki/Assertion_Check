@@ -1,6 +1,6 @@
 import { Hono } from "hono";
 import { findUserByCognitoSub } from "../db/users.js";
-import { findRecordsByUserId, findRecordByIdAndUserId, countRecordsByUserId, } from "../db/records.js";
+import { findRecordsByUserId, findRecordByIdAndUserId, countRecordsByUserId, deleteRecordByIdAndUserId} from "../db/records.js";
 import type { AuthEnv } from "../middleware/auth.js";
 
 const records = new Hono<AuthEnv>();
@@ -131,6 +131,43 @@ records.get("/:id", async (c) => {
 
     return c.json(
       { error: "分析履歴の詳細取得中にエラーが発生しました" },
+      500,
+    );
+  }
+});
+
+// ログインユーザー本人の分析履歴を削除する。
+records.delete("/:id", async (c) => {
+  try {
+    const recordId = Number(c.req.param("id"));
+
+    // 不正な履歴IDはDB処理へ渡さない。
+    if (!Number.isSafeInteger(recordId) || recordId <= 0) {
+      return c.json({ error: "履歴IDが不正です" }, 400);
+    }
+
+    // ユーザーIDはリクエスト本文ではなく、認証情報から取得する。
+    const cognitoSub = c.get("cognitoSub");
+    const user = await findUserByCognitoSub(cognitoSub);
+
+    if (!user) {
+      return c.json({ error: "分析履歴が見つかりません" }, 404);
+    }
+
+    const deleted = await deleteRecordByIdAndUserId(recordId, user.id);
+
+    // 他人の履歴も、存在しない履歴と同じ扱いにする。
+    if (!deleted) {
+      return c.json({ error: "分析履歴が見つかりません" }, 404);
+    }
+
+    // 削除成功時は本文なしで返す。
+    return c.body(null, 204);
+  } catch (error) {
+    console.error("分析履歴の削除に失敗しました:", error);
+
+    return c.json(
+      { error: "分析履歴の削除中にエラーが発生しました" },
       500,
     );
   }
