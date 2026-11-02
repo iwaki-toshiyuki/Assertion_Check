@@ -144,6 +144,16 @@ export default function SignUpForm() {
         error={confirmPasswordError}
       />
 
+      {/* エラーメッセージ */}
+      {error && (
+        <p
+          role="alert"
+          className="rounded-lg border border-red-100 bg-red-50 px-3 py-2 text-sm text-red-700"
+        >
+          {error}
+        </p>
+      )}
+
       {/* 新規登録ボタン */}
       <button
         type="submit"
