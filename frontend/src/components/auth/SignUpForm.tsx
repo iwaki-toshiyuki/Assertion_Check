@@ -25,22 +25,22 @@ export default function SignUpForm() {
   // 新規登録ボタンを押したときに、入力を確認して登録処理を行う。
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
 
-      // フォーム送信時のページ再読み込みを防止する。
-      event.preventDefault();
+    // フォーム送信時のページ再読み込みを防止する。
+    event.preventDefault();
 
-      // 前回の送信時に表示したエラーをリセットする。
-      setError("");
-      setConfirmPasswordError("");
+    // 前回の送信時に表示したエラーをリセットする。
+    setError("");
+    setConfirmPasswordError("");
 
-      // パスワードが一致しない場合は、登録処理を行わず確認欄へ移動する。
-      if (password !== confirmPassword) {
-        setConfirmPasswordError("パスワードが一致しません。");
-        document.getElementById("confirm-password")?.focus();
-        return;
-      }
+    // パスワードが一致しない場合は、登録処理を行わず確認欄へ移動する。
+    if (password !== confirmPassword) {
+      setConfirmPasswordError("パスワードが一致しません。");
+      document.getElementById("confirm-password")?.focus();
+      return;
+    }
 
-      // 一致を確認してから、既存の登録処理を開始する。
-      setIsLoading(true);
+    // 一致を確認してから、既存の登録処理を開始する。
+    setIsLoading(true);
 
     try {
       // Cognitoに新規登録をリクエストする
