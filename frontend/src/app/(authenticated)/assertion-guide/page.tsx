@@ -7,6 +7,7 @@ export default function AssertionGuidePage() {
       <div className="mx-auto max-w-2xl px-4 pb-12 sm:px-6">
         {/* ページタイトル */}
         <header className="pt-8 pb-6 sm:pt-10">
+          {/* ホームへ戻るリンク */}
           <div className="mb-6">
             <Link
               href="/"

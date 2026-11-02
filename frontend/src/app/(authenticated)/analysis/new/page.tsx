@@ -166,6 +166,7 @@ export default function NewAnalysisPage() {
   return (
       <main className="min-h-full bg-emerald-50 px-4 py-8">
         <div className="mx-auto max-w-2xl">
+          {/* ホームへ戻るリンク */}
           <div className="mb-6">
             <Link
               href="/"
