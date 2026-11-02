@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 // アサーションと3つのコミュニケーションタイプを説明する画面
 export default function AssertionGuidePage() {
   return (
@@ -5,6 +7,15 @@ export default function AssertionGuidePage() {
       <div className="mx-auto max-w-2xl px-4 pb-12 sm:px-6">
         {/* ページタイトル */}
         <header className="pt-8 pb-6 sm:pt-10">
+          {/* ホームへ戻るリンク */}
+          <div className="mb-6">
+            <Link
+              href="/"
+              className="font-semibold text-emerald-700 hover:underline"
+            >
+              ← ホームに戻る
+            </Link>
+          </div>
           <h1 className="text-2xl font-bold text-emerald-900">
             アサーションとは
           </h1>

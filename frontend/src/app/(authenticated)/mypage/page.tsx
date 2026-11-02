@@ -58,6 +58,15 @@ export default function MyPage() {
       <div className="mx-auto max-w-2xl">
        {/* ページタイトル */}
         <header className="px-4 pt-8 pb-2 sm:px-6 sm:pt-10">
+          {/* ホームへ戻るリンク */}
+          <div className="mb-6">
+            <Link
+              href="/"
+              className="font-semibold text-emerald-700 hover:underline"
+            >
+              ← ホームに戻る
+            </Link>
+          </div>
           <h1 className="text-2xl font-bold text-emerald-900">
             マイページ
           </h1>
