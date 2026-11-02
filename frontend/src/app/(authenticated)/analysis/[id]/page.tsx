@@ -100,6 +100,15 @@ const fromPage =
   return (
     <main className="min-h-full bg-emerald-50 px-4 py-8">
       <div className="mx-auto max-w-2xl">
+        {/* 履歴一覧へ戻るリンク */}
+        <div className="mb-6">
+          <Link
+            href={`/?page=${fromPage}`}
+            className="font-semibold text-emerald-700 hover:underline"
+          >
+            ← 履歴一覧に戻る
+          </Link>
+        </div>
         {/* 画面タイトル */}
         <header className="mb-8 text-center">
           <h1 className="text-2xl font-bold text-emerald-800 sm:text-3xl">
@@ -158,16 +167,6 @@ const fromPage =
             表示できる分析履歴がありません。
           </p>
         )}
-
-        {/* 履歴一覧へ戻るリンク */}
-        <div className="mt-8 text-center">
-          <Link
-            href={`/?page=${fromPage}`}
-            className="font-semibold text-emerald-700 hover:underline"
-          >
-            履歴一覧に戻る
-          </Link>
-        </div>
       </div>
     </main>
   );

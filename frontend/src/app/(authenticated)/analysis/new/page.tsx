@@ -7,6 +7,7 @@ import AssertionGuideLink from "@/components/assertion/AssertionGuideLink";
 import { fetchAuthSession } from "aws-amplify/auth";
 import type { AnalysisResponse } from "@/types/analysis";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 
 export default function NewAnalysisPage() {
@@ -165,6 +166,14 @@ export default function NewAnalysisPage() {
   return (
       <main className="min-h-full bg-emerald-50 px-4 py-8">
         <div className="mx-auto max-w-2xl">
+          <div className="mb-6">
+            <Link
+              href="/"
+              className="font-semibold text-emerald-700 hover:underline"
+            >
+              ← ホームに戻る
+            </Link>
+          </div>
 
           {/* 新規作成画面の見出し */}
           <header className="mb-8 text-center">
