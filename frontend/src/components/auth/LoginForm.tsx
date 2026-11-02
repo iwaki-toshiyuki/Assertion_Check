@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { loginUser } from "@/lib/auth/login";
 import { syncDbUser } from "@/lib/api/users";
 import { fetchCurrentUser } from "@/lib/auth/current-user";
+import PasswordInput from "@/components/auth/PasswordInput";
 
 type AuthStatus = "checking" | "signedOut" | "syncing" | "syncError" | "redirecting" | "authError";
 
@@ -215,24 +216,14 @@ export default function LoginForm() {
         />
       </div>
 
-      {/* パスワード入力 */}
-      <div>
-        <label
-          htmlFor="password"
-          className="mb-2 block text-sm font-semibold text-gray-800"
-        >
-          パスワード
-        </label>
-        <input
-          id="password"
-          type="password"
-          autoComplete="current-password"
-          required
-          value={password}
-          onChange={(event) => setPassword(event.target.value)}
-          className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2.5 text-gray-900 outline-none transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100"
-        />
-      </div>
+      {/* 共通の入力欄を使い、ログイン時もパスワードの表示を切り替えられるようにする。 */}
+      <PasswordInput
+        id="password"
+        label="パスワード"
+        value={password}
+        onChange={setPassword}
+        autoComplete="current-password"
+      />
 
       {/* エラーメッセージ */}
       {error && (
