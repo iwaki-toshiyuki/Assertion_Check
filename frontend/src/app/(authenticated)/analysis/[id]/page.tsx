@@ -233,6 +233,9 @@ const fromPage =
               </p>
             </section>
 
+            {/* 既存の分析結果コンポーネントを再利用する */}
+            <AnalysisResult result={analysisResult} />
+
             {/* 履歴が表示できている場合に、削除操作を案内する。 */}
             <div className="mt-8 text-center">
               <button
